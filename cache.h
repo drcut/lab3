@@ -19,9 +19,13 @@ typedef struct Cacheway_{
 	uint64_t tag;
 	int last_visit_time;
 	bool valid;
+	char* data;
+	bool have_write;
 	Cacheway_()
 	{
 		valid = 0;
+		data = NULL;
+		have_write = 0;
 	}
 } Cacheway;
 typedef struct CacheSet_{
@@ -44,7 +48,7 @@ class Cache: public Storage {
   void SetConfig(CacheConfig cc){ config_ = cc; }
   void GetConfig(CacheConfig &cc){ cc = config_; }
   void SetLower(Storage *ll) { lower_ = ll; }
-  bool miss(uint64_t addr);
+  bool miss(uint64_t addr,int& last_visit);
   // Main access process
   void HandleRequest(uint64_t addr, int bytes, int read,
                      char *content, int &hit, int &time);
