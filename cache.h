@@ -36,13 +36,12 @@ class Cache: public Storage {
   Cache() 
   {
   	now_time = 0;
-  	set = new CacheSet[config_.set_num];
-  	/*for(int i = 0;i<4096;i++)
+  	//set = new CacheSet[config_.set_num];
+  	for(int i = 0;i<4096;i++)
   		for(int j = 0;j<32;j++)
-  		set[i].way[j].valid = 0;*/
+  		set[i].way[j].valid = 0;
   	printf("init cache\n");
   }
-  ~Cache() {}
 
   // Sets & Gets
   void SetConfig(CacheConfig cc){ config_ = cc; }
@@ -100,7 +99,7 @@ class Cache: public Storage {
   int PrefetchDecision();
   void PrefetchAlgorithm();
 
-  CacheSet* set;
+  CacheSet set[4096];
   CacheConfig config_;
   Storage *lower_;
   DISALLOW_COPY_AND_ASSIGN(Cache);
