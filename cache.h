@@ -85,7 +85,24 @@ class Cache: public Storage {
   	printf("addr %" PRIu64 " tag %" PRIu64 "\n",addr,res);
   	return res;
   }
-
+uint64_t get_addr_by_cache(int set_index,int way_index)
+{
+	int offset = 0;//last bit
+  	int tmp = config_.block_size;
+  	while(tmp!=1)
+  	{
+  		offset++;
+  		tmp>>=1;
+  	}
+  	int offset_set = 0;//middle bit
+  	tmp = config_.set_num;
+  	while(tmp!=1)
+  	{
+  		offset_set++;
+  		tmp>>=1;
+  	}
+  	return (set[set_index].way[way_index].tag<<(offset_set+offset))+(set_index<<offset);
+}
  private:
   int now_time;
   // Bypassing

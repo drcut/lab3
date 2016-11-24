@@ -25,7 +25,7 @@ printf("set_associativity(way num):");
 scanf("%d",&cc.associativity);*/
 cc.size = 32<<10;
 cc.associativity = 8;
-cc.block_size = 64;
+cc.block_size = 8;
 cc.set_num = cc.size/(cc.associativity*cc.block_size);
 l1.SetConfig(cc);
 
@@ -56,7 +56,7 @@ l1.SetConfig(cc);
   while(fscanf(fp,"%c	%" PRIu64 " \n",&action,&addr)!=EOF)
   {
   	  //printf("%c  %" PRIu64 "\n",action,addr);
-	  l1.HandleRequest((uint64_t)addr, 0, 1, content, hit, time);
+	  l1.HandleRequest((uint64_t)addr, 0, (action=='r'), content, hit, time);
 	  //printf("Request access time: %dns\n", time);
   }
 l1.GetStats(s);

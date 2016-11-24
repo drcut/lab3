@@ -39,27 +39,69 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read,
 		set[set_num].way[last_visit].tag = tag;
 		set[set_num].way[last_visit].last_visit_time = now_time++;
 		set[set_num].way[last_visit].have_write = 0;
-		if(!read)
+		if(!read)//write
 		{
+			int lower_hit, lower_time;
+    			lower_->HandleRequest(addr, bytes, read, content,
+                        		lower_hit, lower_time);//write alloc
 			set[set_num].way[last_visit].data = new char[bytes];
 			memcpy(set[set_num].way[last_visit].data,content,bytes);
+    			hit = 0;
+    			time += latency_.bus_latency + lower_time;
+    			stats_.access_time += latency_.bus_latency;
 		}
-		else
+		else//read
 		{
 			//read the data from lower level and then fill the block
+			int lower_hit, lower_time;
+    			lower_->HandleRequest(addr, bytes, read, content,
+                        		lower_hit, lower_time);
+    			set[set_num].way[last_visit].data = new char[bytes];
+			memcpy(set[set_num].way[last_visit].data,content,bytes);//update the cache data
+			hit = 0;
+			time += latency_.bus_latency + lower_time;
+    			stats_.access_time += latency_.bus_latency;
 		}
 	}
   	//else replace by LRU
   	else
   	{
   		//if old block's have_write == 1,it shold be write to mem before it is replaced
+  		if(set[set_num].way[last_visit].have_write)
+  		{
+  			int lower_hit, lower_time;
+  			lower_->HandleRequest(get_addr_by_cache(set_num, last_visit), bytes, 0 , set[set_num].way[last_visit].data,
+                        		lower_hit, lower_time);//write back
+  			//update time for write back
+  			time += latency_.bus_latency + lower_time;
+    			stats_.access_time += latency_.bus_latency;
+
+    			lower_->HandleRequest(addr, bytes, read, content,lower_hit, lower_time);
+			memcpy(set[set_num].way[last_visit].data,content,bytes);//update the cache data
+			//update time(should add bus_latency twice?)
+			hit = 0;
+			time += lower_time;
+    			//update block
+  			set[set_num].way[last_visit].valid = 1;
+			set[set_num].way[last_visit].tag = tag;
+			set[set_num].way[last_visit].last_visit_time = now_time++;
+			set[set_num].way[last_visit].have_write = 0;
+  		}
+  		else
+  		{
+  			set[set_num].way[last_visit].valid = 1;
+			set[set_num].way[last_visit].tag = tag;
+			set[set_num].way[last_visit].last_visit_time = now_time++;
+			set[set_num].way[last_visit].have_write = 0;
+  			int lower_hit, lower_time;
+    			lower_->HandleRequest(addr, bytes, read, content,
+                        		lower_hit, lower_time);//read data
+			memcpy(set[set_num].way[last_visit].data,content,bytes);//update the cache data
+			hit = 0;
+			time += latency_.bus_latency + lower_time;
+    			stats_.access_time += latency_.bus_latency;
+  		}
   	}
-  	int lower_hit, lower_time;
-    	lower_->HandleRequest(addr, bytes, read, content,
-                          lower_hit, lower_time);
-   	 hit = 0;
-    	time += latency_.bus_latency + lower_time;
-    	stats_.access_time += latency_.bus_latency;
   }
   else
   {
