@@ -8,7 +8,7 @@
 #include <inttypes.h>
 #define TYPE_H
 #endif
-#define F_PATH "../trace/1.trace"
+#define F_PATH "1.trace"
 int main(void) {
 	Memory m;
 
