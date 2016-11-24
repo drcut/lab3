@@ -8,26 +8,24 @@
 #include <inttypes.h>
 #define TYPE_H
 #endif
-#define F_PATH "/home/robin/study/trace/1.trace"
+#define F_PATH "../trace/1.trace"
 int main(void) {
-  Memory m;
-  Cache l1;
-  l1.SetLower(&m);
+	Memory m;
 
-
-CacheConfig cc;
-/*printf("Cache_Size(KB):");
-scanf("%d",&cc.size);
-cc.size = (cc.size<<10);
-printf("Block_Size(byte):");
-scanf("%d",&cc.block_size);
-printf("set_associativity(way num):");
-scanf("%d",&cc.associativity);*/
-cc.size = 32<<10;
-cc.associativity = 8;
-cc.block_size = 64;
-cc.set_num = cc.size/(cc.associativity*cc.block_size);
-l1.SetConfig(cc);
+	CacheConfig cc;
+	/*printf("Cache_Size(KB):");
+	scanf("%d",&cc.size);
+	cc.size = (cc.size<<10);
+	printf("Block_Size(byte):");
+	scanf("%d",&cc.block_size);
+	printf("set_associativity(way num):");
+	scanf("%d",&cc.associativity);*/
+	cc.size = 32<<10;
+	cc.associativity = 8;
+	cc.block_size = 64;
+	cc.set_num = cc.size/(cc.associativity*cc.block_size);
+	Cache l1(cc);
+	l1.SetLower(&m);
 
   StorageStats s;
   s.access_time = 0;

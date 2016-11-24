@@ -33,10 +33,11 @@ typedef struct CacheSet_{
 }CacheSet;
 class Cache: public Storage {
  public:
-  Cache() 
+  Cache(CacheConfig _cc) 
   {
   	now_time = 0;
-  	set = new CacheSet[config_.set_num];
+  	config_ = _cc;
+  	set = new CacheSet[_cc.set_num];
   	/*for(int i = 0;i<4096;i++)
   		for(int j = 0;j<32;j++)
   		set[i].way[j].valid = 0;*/
