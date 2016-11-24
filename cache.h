@@ -38,12 +38,11 @@ class Cache: public Storage {
   	now_time = 0;
   	config_ = _cc;
   	set = new CacheSet[_cc.set_num];
-  	/*for(int i = 0;i<4096;i++)
-  		for(int j = 0;j<32;j++)
-  		set[i].way[j].valid = 0;*/
+  	for(int i = 0; i < _cc.set_num; i++)
+  		for(int j = 0; j < 32; j++)
+  			set[i].way[j].valid = 0;
   	printf("init cache\n");
   }
-  ~Cache() {}
 
   // Sets & Gets
   void SetConfig(CacheConfig cc){ config_ = cc; }

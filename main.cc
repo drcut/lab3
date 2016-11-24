@@ -21,8 +21,8 @@ int main(void) {
 	printf("set_associativity(way num):");
 	scanf("%d",&cc.associativity);*/
 	cc.size = 32<<10;
-	cc.associativity = 8;
-	cc.block_size = 64;
+	cc.associativity = 32;
+	cc.block_size = 32;
 	cc.set_num = cc.size/(cc.associativity*cc.block_size);
 	Cache l1(cc);
 	l1.SetLower(&m);
