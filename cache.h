@@ -33,13 +33,14 @@ typedef struct CacheSet_{
 }CacheSet;
 class Cache: public Storage {
  public:
-  Cache() 
+  Cache(CacheConfig _cc) 
   {
   	now_time = 0;
-  	//set = new CacheSet[config_.set_num];
-  	for(int i = 0;i<4096;i++)
-  		for(int j = 0;j<32;j++)
-  		set[i].way[j].valid = 0;
+  	config_ = _cc;
+  	set = new CacheSet[_cc.set_num];
+  	for(int i = 0; i < _cc.set_num; i++)
+  		for(int j = 0; j < 32; j++)
+  			set[i].way[j].valid = 0;
   	printf("init cache\n");
   }
 
@@ -116,7 +117,7 @@ uint64_t get_addr_by_cache(int set_index,int way_index)
   int PrefetchDecision();
   void PrefetchAlgorithm();
 
-  CacheSet set[4096];
+  CacheSet* set;
   CacheConfig config_;
   Storage *lower_;
   DISALLOW_COPY_AND_ASSIGN(Cache);

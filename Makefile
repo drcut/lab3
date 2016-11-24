@@ -4,6 +4,7 @@ all: sim
 
 sim: main.o cache.o memory.o
 	$(CC) -o $@ $^
+	rm -rf *.o *~
 
 main.o: cache.h
 
