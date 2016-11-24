@@ -19,6 +19,10 @@ typedef struct Cacheway_{
 	uint64_t tag;
 	int last_visit_time;
 	bool valid;
+	Cacheway_()
+	{
+		valid = 0;
+	}
 } Cacheway;
 typedef struct CacheSet_{
 	Cacheway way[32];
@@ -28,9 +32,10 @@ class Cache: public Storage {
   Cache() 
   {
   	now_time = 0;
-  	for(int i = 0;i<4096;i++)
+  	set = new CacheSet[config_.set_num];
+  	/*for(int i = 0;i<4096;i++)
   		for(int j = 0;j<32;j++)
-  		set[i].way[j].valid = 0;
+  		set[i].way[j].valid = 0;*/
   	printf("init cache\n");
   }
   ~Cache() {}
@@ -91,7 +96,7 @@ class Cache: public Storage {
   int PrefetchDecision();
   void PrefetchAlgorithm();
 
-  CacheSet set[4096];
+  CacheSet* set;
   CacheConfig config_;
   Storage *lower_;
   DISALLOW_COPY_AND_ASSIGN(Cache);
