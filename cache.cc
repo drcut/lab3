@@ -3,6 +3,7 @@
 #include <cstring>
 bool Cache::miss(uint64_t addr,int &last_visit)
 {
+	stats_.access_counter++;
 	uint64_t set_num= get_set_num(addr);
 	uint64_t tag = get_tag(addr);
 	bool have = 0;
@@ -21,6 +22,7 @@ bool Cache::miss(uint64_t addr,int &last_visit)
 			last_visit = i;
 	}
 	printf("miss\n");
+	stats_.miss_num++;
 	return 1;
 }
 void Cache::HandleRequest(uint64_t addr, int bytes, int read,
