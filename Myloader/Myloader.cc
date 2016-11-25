@@ -3,8 +3,6 @@
 #include "string.h"
 #include "exec.h"
 
-#define PROG_SIM
-
 // ELF format
 #define EI_NIDENT   (16)
 
@@ -107,7 +105,7 @@ int main(int argc, char **argv)
 		fseek(fp2, p.offset, SEEK_SET);											// fp2: read segment content
 		void *seg_start = memptr(p.virtaddr);
 		fread(seg_start, 1, p.filesize, fp2);									// load segment content into Mem
-		memset((void*)(seg_start + p.filesize), 0, p.memsize - p.filesize);		// clear bss area in Mem
+		memset((void*)((Addr)seg_start + p.filesize), 0, p.memsize - p.filesize);		// clear bss area in Mem
 	}
 	
 	init(e.e_entry);

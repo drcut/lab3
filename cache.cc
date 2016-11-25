@@ -12,16 +12,16 @@ bool Cache::miss(uint64_t addr, int &last_visit)
 		if(set[set_num].way[i].tag == tag && set[set_num].way[i].valid == 1)
 		{
 			set[set_num].way[i].last_visit_time = now_time++;
-			printf("hit\n");
-			return 0;
+			//printf("hit\n");
+			return false;
 		}
 		if(set[set_num].way[i].last_visit_time < set[set_num].way[last_visit].last_visit_time && set[set_num].way[last_visit].valid == 1 && set[set_num].way[last_visit].valid == 1)
 			last_visit = i;
 		if(set[set_num].way[i].valid == 0)	//prefer to use the empty block
 			last_visit = i;
 	}
-	printf("miss\n");
-	return 1;
+	//printf("miss\n");
+	return true;
 }
 void Cache::HandleRequest(uint64_t addr, int bytes, int read,
                           char *content, int &hit, int &time) {
@@ -32,6 +32,9 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read,
 	uint64_t set_num = get_set_num(addr);
 	uint64_t tag = get_tag(addr);
 	uint64_t offset = get_offset(addr);
+	
+	//printf("Request type = %c, addr = 0x%016lx, len = %d\n", read?'r':'w', addr, bytes);
+	//printf("tag = 0x%lx, set_num = 0x%lx, offset = 0x%lx\n", tag, set_num, offset);
 	
 	if(miss(addr,last_visit))
 	{

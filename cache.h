@@ -96,7 +96,7 @@ class Cache: public Storage {
   		tmp>>=1;
   	}
   	uint64_t res = (addr>>offset)&((uint64_t)config_.set_num-1);
-  	printf("addr %" PRIu64 " set %" PRIu64 "\n",addr,res);
+  	//printf("addr %" PRIu64 " set %" PRIu64 "\n",addr,res);
   	//getchar();
   	return res;
   }
@@ -118,7 +118,7 @@ class Cache: public Storage {
   		tmp>>=1;
   	}
   	uint64_t res = (addr>>(offset_set+offset));
-  	printf("addr %" PRIu64 " tag %" PRIu64 "\n",addr,res);
+  	//printf("addr %" PRIu64 " tag %" PRIu64 "\n",addr,res);
   	return res;
   }
   
@@ -133,7 +133,7 @@ class Cache: public Storage {
   	}
   	
   	uint64_t res = addr & ((1 << offset) - 1);
-  	printf("addr %" PRIu64 " offset %" PRIu64 "\n",addr,res);
+  	//printf("addr %" PRIu64 " offset %" PRIu64 "\n",addr,res);
   	return res;
   }
   

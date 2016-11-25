@@ -93,9 +93,12 @@ void init(Addr entry)
 	memset(FRegFile, 0, sizeof(FRegFile));
 	memset(DRegFile, 0, sizeof(DRegFile));
 	
+	// Memory setting
+	main_mem.set_mem_data(mem_data);
+	
 	// Cache setting
 	CacheConfig cc1;
-	cc1.size = 2 << 15;
+	cc1.size = 1 << 15;
 	cc1.associativity = 32;
 	cc1.block_size = 32;
 	cc1.set_num = cc1.size/(cc1.associativity * cc1.block_size);
@@ -1282,7 +1285,7 @@ int SYSTEM_func(int IF)
 {
 	if((IF >> 20) == 0)			// ECALL
 	{
-		// printf("SYSTEM CALL: %d\n", (int)RegFile[17]);
+		printf("SYSTEM CALL: %d\n", (int)RegFile[17]);
 		switch(RegFile[17])
 		{
 		    case 57://close

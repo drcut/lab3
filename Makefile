@@ -13,7 +13,7 @@ cache.o: cache.h def.h
 memory.o: memory.h
 
 prog_sim:
-	$(CC) -o $@ cache.cc def.h memory.cc Myloader/Myloader.cc
+	$(CC) -o $@ -D PROG_SIM cache.cc memory.cc Myloader/Myloader.cc
 
 .PHONY: clean
 
