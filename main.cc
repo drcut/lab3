@@ -9,7 +9,7 @@
 #define TYPE_H
 #endif
 //#define F_PATH "1.trace"
-int main(void) {
+int main(int argc, char **argv) {
 	Memory m;
 
 	CacheConfig cc;
