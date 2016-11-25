@@ -68,6 +68,7 @@ printf("Total L1 access time: %dns\n", s.access_time);
 printf("Total L1 access count: %d\n", s.access_counter);
 printf("Total L1 miss count: %d\n", s.miss_num);
 printf("Total L1 miss rate: %f\n", (float)s.miss_num/(float)s.access_counter);
+printf("Total L1 replacement count: %d\n", s.replace_num);
 m.GetStats(s);
 printf("Total Memory access time: %dns\n", s.access_time);
 printf("Total Memory access count: %d\n", s.access_counter);
