@@ -1,7 +1,7 @@
 #include "cache.h"
 #include "def.h"
 #include <cstring>
-bool Cache::miss(uint64_t addr,int &last_visit)
+bool Cache::miss(uint64_t addr, int &last_visit)
 {
 	uint64_t set_num= get_set_num(addr);
 	uint64_t tag = get_tag(addr);
@@ -12,7 +12,7 @@ bool Cache::miss(uint64_t addr,int &last_visit)
 		if(set[set_num].way[i].tag == tag && set[set_num].way[i].valid == 1)
 		{
 			set[set_num].way[i].last_visit_time = now_time++;
-			printf("not miss\n");
+			printf("hit\n");
 			return 0;
 		}
 		if(set[set_num].way[i].last_visit_time < set[set_num].way[last_visit].last_visit_time && set[set_num].way[last_visit].valid == 1 && set[set_num].way[last_visit].valid == 1)
@@ -105,10 +105,29 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read,
   }
   else
   {
+#ifdef PROG_SIM
+  	uint64_t set_num = get_set_num(addr);
+	uint64_t tag = get_tag(addr);
+	uint64_t offset = get_offset(addr);
+	for(int i = 0; i < config_.associativity; i++)
+	{
+		if(set[set_num].way[i].tag == tag && set[set_num].way[i].valid == 1)
+		{
+			if(read)
+				memcpy(content, set[set_num].way[i].data + offset, bytes);
+			else
+			{
+				memcpy(set[set_num].way[i].data + offset, content, bytes);
+				set[set_num].way[i].have_write = true;
+			}
+		}
+	}
+#endif
+  
   	hit = 1;
-     	time += latency_.bus_latency + latency_.hit_latency;
-      	stats_.access_time += time;
-      	return;
+    time += latency_.bus_latency + latency_.hit_latency;
+    stats_.access_time += time;
+    return;
   }
 }
 
