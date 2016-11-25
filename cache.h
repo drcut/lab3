@@ -15,32 +15,47 @@ typedef struct CacheConfig_ {
   int write_allocate; // 0|1 for no-alc|alc
   int block_size;
 } CacheConfig;
-typedef struct Cacheway_{
+typedef struct CacheWay_{
 	uint64_t tag;
 	int last_visit_time;
 	bool valid;
 	char* data;
 	bool have_write;
-	Cacheway_()
+	CacheWay_()
 	{
-		valid = 0;
 		data = NULL;
-		have_write = 0;
 	}
-} Cacheway;
+	void init(CacheConfig cc)
+	{
+		data = new char[cc.block_size];
+		valid = false;
+		have_write = false;
+	}
+} CacheWay;
 typedef struct CacheSet_{
-	Cacheway way[32];
-}CacheSet;
+	CacheWay* way;
+	CacheSet_()
+	{
+		way = NULL;
+	}
+	void init(CacheConfig cc)
+	{
+		way = new CacheWay[cc.associativity];
+		for(int i = 0; i < cc.associativity; i++)
+		{
+			way[i].init(cc);
+		}
+	}
+} CacheSet;
 class Cache: public Storage {
  public:
-  Cache(CacheConfig _cc) 
+  Cache(CacheConfig cc) 
   {
   	now_time = 0;
-  	config_ = _cc;
+  	set = NULL;
   	lower_ = NULL;
-  	set = new CacheSet[_cc.set_num];
-  
-  	printf("Init cache\n");
+  	
+  	SetConfig(cc);
   }
   
   Cache()
@@ -54,11 +69,15 @@ class Cache: public Storage {
   void SetConfig(CacheConfig cc)
   {
   	config_ = cc;
+  	
   	if(set != NULL)
   		delete(set);
   	set = new CacheSet[cc.set_num];
-  	
-  	printf("Reinit cache\n");
+  	for(int i = 0; i < cc.set_num; i++)
+  	{
+  		set[i].init(cc);
+  	}
+  	printf("Init cache\n");
   }
   void GetConfig(CacheConfig &cc){ cc = config_; }
   void SetLower(Storage *ll) { lower_ = ll; }
