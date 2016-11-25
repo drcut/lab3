@@ -16,7 +16,7 @@ bool Cache::miss(uint64_t addr, int &last_visit)
 			dbg_printf("hit\n");
 			return false;
 		}
-		if(set[set_num].way[i].last_visit_time < set[set_num].way[last_visit].last_visit_time && set[set_num].way[last_visit].valid == 1 && set[set_num].way[last_visit].valid == 1)
+		if(set[set_num].way[i].last_visit_time < set[set_num].way[last_visit].last_visit_time && set[set_num].way[last_visit].valid == 1 && set[set_num].way[i].valid == 1)			
 			last_visit = i;
 		if(set[set_num].way[i].valid == 0)	//prefer to use the empty block
 			last_visit = i;
@@ -41,11 +41,8 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read,
 	
 	if(miss(addr,last_visit))
 	{
-		// Evicting old block (if needed)
-	  	if(!set[set_num].way[last_visit].valid)	// if still have empty block, do not evict
-		{
-		}
-		else									// else evict by LRU
+		// Evicting old block (if needed) by LRU
+		if(set[set_num].way[last_visit].valid)
 		{
 			// If policy == write_back && have_write, then need to write back
 			if(!config_.write_through && set[set_num].way[last_visit].have_write)
@@ -125,14 +122,15 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read,
 					else	// write back
 					{
 						set[set_num].way[i].have_write = true;
+						time += latency_.bus_latency + latency_.hit_latency;
+						stats_.access_time += time;
 					}
 				}
 			}
-			time += latency_.bus_latency + latency_.hit_latency;
-			stats_.access_time += time;
+			//time += latency_.bus_latency + latency_.hit_latency;
+			//stats_.access_time += time;
 		}
 		#endif
-	  
 	  	hit = 1;
 		return;
 	}

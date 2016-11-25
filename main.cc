@@ -24,6 +24,7 @@ int main(void) {
 	cc.associativity = 32;
 	cc.block_size = 32;
 	cc.set_num = cc.size/(cc.associativity*cc.block_size);
+	cc.write_allocate = 0;
 	Cache l1(cc);
 	l1.SetLower(&m);
 
