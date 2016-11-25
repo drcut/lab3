@@ -44,6 +44,7 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read,
 	if(miss(addr,last_visit))
 	{
 		// Evicting old block (if needed) by LRU
+		stats_.replace_num += config_.block_size;
 		if(set[set_num].way[last_visit].valid)
 		{
 			// If policy == write_back && have_write, then need to write back
