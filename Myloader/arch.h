@@ -14,7 +14,7 @@ int fcsr = 0;								// Floating control and state register
 
 char mem_data[Mem_size];
 Memory main_mem;
-Cache l1;
+Cache l1,l2,llc;
 
 Addr Stack_base = Mem_size - (1 << 12);		// save 4KB (may need to modify)
 Addr PC;

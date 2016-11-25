@@ -20,13 +20,32 @@ int main(int argc, char **argv) {
 	scanf("%d",&cc.block_size);
 	printf("set_associativity(way num):");
 	scanf("%d",&cc.associativity);*/
+	//set LLC
+	cc.size = 8<<20;
+	cc.associativity = 8;
+	cc.block_size = 64;
+	cc.set_num = cc.size/(cc.associativity*cc.block_size);
+	cc.write_allocate = 1;
+	cc.write_through = 0;
+	Cache llc(cc);
+	llc.SetLower(&m);
+	//set L2
+	cc.size = 256<<10;
+	cc.associativity = 8;
+	cc.block_size = 64;
+	cc.set_num = cc.size/(cc.associativity*cc.block_size);
+	cc.write_allocate = 1;
+	cc.write_through = 0;
+	Cache l2(cc);
+	l2.SetLower(&llc);
+	//set l1
 	cc.size = 32<<10;
-	cc.associativity = 32;
-	cc.block_size = 32;
+	cc.associativity = 8;
+	cc.block_size = 64;
 	cc.set_num = cc.size/(cc.associativity*cc.block_size);
 	cc.write_allocate = 0;
 	Cache l1(cc);
-	l1.SetLower(&m);
+	l1.SetLower(&l2);
 
   StorageStats s;
   s.access_counter = 0;

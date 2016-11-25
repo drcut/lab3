@@ -136,7 +136,11 @@ int main(int argc, char **argv)
 		instr_count++;
 		stat = decode_and_run(IF);
 		if(opcode(IF) == SYSTEM)
+		{
 			l1.sync_with_mem(mem_data);
+			l2.sync_with_mem(mem_data);
+			llc.sync_with_mem(mem_data);
+		}
 		
 		if(stat != 0)
 			break;
