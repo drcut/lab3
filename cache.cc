@@ -4,7 +4,6 @@
 
 bool Cache::miss(uint64_t addr, int &last_visit)
 {
-	stats_.access_counter++;
 	uint64_t set_num= get_set_num(addr);
 	uint64_t tag = get_tag(addr);
 	bool have = 0;
@@ -31,6 +30,7 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read,
 	hit = 0;
 	time = 0;
 	int last_visit;
+	stats_.access_counter++;
 	
 	uint64_t set_num = get_set_num(addr);
 	uint64_t tag = get_tag(addr);
