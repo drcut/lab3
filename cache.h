@@ -7,6 +7,9 @@
 #include <inttypes.h>
 #define TYPE_H
 #endif
+
+#define dbg_printf
+
 typedef struct CacheConfig_ {
   int size;
   int associativity;
@@ -77,7 +80,7 @@ class Cache: public Storage {
   	{
   		set[i].init(cc);
   	}
-  	printf("Init cache\n");
+  	dbg_printf("Init cache\n");
   }
   void GetConfig(CacheConfig &cc){ cc = config_; }
   void SetLower(Storage *ll) { lower_ = ll; }

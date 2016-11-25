@@ -102,6 +102,8 @@ void init(Addr entry)
 	cc1.associativity = 32;
 	cc1.block_size = 32;
 	cc1.set_num = cc1.size/(cc1.associativity * cc1.block_size);
+	cc1.write_through = 1;
+	cc1.write_allocate = 0;
 	l1.SetConfig(cc1);
 	l1.SetLower(&main_mem);
 	
@@ -1285,7 +1287,7 @@ int SYSTEM_func(int IF)
 {
 	if((IF >> 20) == 0)			// ECALL
 	{
-		printf("SYSTEM CALL: %d\n", (int)RegFile[17]);
+		// printf("SYSTEM CALL: %d\n", (int)RegFile[17]);
 		switch(RegFile[17])
 		{
 		    case 57://close

@@ -1,6 +1,7 @@
 #include "cache.h"
 #include "def.h"
 #include <cstring>
+
 bool Cache::miss(uint64_t addr, int &last_visit)
 {
 	uint64_t set_num= get_set_num(addr);
@@ -12,7 +13,7 @@ bool Cache::miss(uint64_t addr, int &last_visit)
 		if(set[set_num].way[i].tag == tag && set[set_num].way[i].valid == 1)
 		{
 			set[set_num].way[i].last_visit_time = now_time++;
-			//printf("hit\n");
+			dbg_printf("hit\n");
 			return false;
 		}
 		if(set[set_num].way[i].last_visit_time < set[set_num].way[last_visit].last_visit_time && set[set_num].way[last_visit].valid == 1 && set[set_num].way[last_visit].valid == 1)
@@ -20,7 +21,7 @@ bool Cache::miss(uint64_t addr, int &last_visit)
 		if(set[set_num].way[i].valid == 0)	//prefer to use the empty block
 			last_visit = i;
 	}
-	//printf("miss\n");
+	dbg_printf("miss\n");
 	return true;
 }
 void Cache::HandleRequest(uint64_t addr, int bytes, int read,
@@ -33,8 +34,10 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read,
 	uint64_t tag = get_tag(addr);
 	uint64_t offset = get_offset(addr);
 	
-	//printf("Request type = %c, addr = 0x%016lx, len = %d\n", read?'r':'w', addr, bytes);
-	//printf("tag = 0x%lx, set_num = 0x%lx, offset = 0x%lx\n", tag, set_num, offset);
+	int lower_hit, lower_time = 0;		// TODO: Now the time may not be correctly counted.
+	
+	dbg_printf("Request type = %c, addr = 0x%016lx, len = %d\n", read?'r':'w', addr, bytes);
+	dbg_printf("tag = 0x%lx, set_num = 0x%lx, offset = 0x%lx\n", tag, set_num, offset);
 	
 	if(miss(addr,last_visit))
 	{
@@ -44,9 +47,9 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read,
 		}
 		else									// else evict by LRU
 		{
-			if(set[set_num].way[last_visit].have_write)	// If have_write, then need to write back
+			// If policy == write_back && have_write, then need to write back
+			if(!config_.write_through && set[set_num].way[last_visit].have_write)
 	  		{
-	  			int lower_hit, lower_time;
 	  			lower_->HandleRequest(get_addr_by_cache(set_num, last_visit), config_.block_size, 0, set[set_num].way[last_visit].data,
 		                    		lower_hit, lower_time);		// write back
 	  			//update time for write back
@@ -56,17 +59,29 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read,
 		}
 		
 		// Loading new block
-		set[set_num].way[last_visit].valid = true;
-		set[set_num].way[last_visit].have_write = false;
-		set[set_num].way[last_visit].tag = tag;
-		set[set_num].way[last_visit].last_visit_time = now_time++;		
 		if(!read)	// write
 		{
-			int lower_hit, lower_time;
-    		lower_->HandleRequest(addr ^ offset, config_.block_size, 1, set[set_num].way[last_visit].data,
-                        		lower_hit, lower_time);		// write alloc: first read the block
-			memcpy(set[set_num].way[last_visit].data + offset, content, bytes);	// write to cache block
-			set[set_num].way[last_visit].have_write = true;
+			if(config_.write_allocate)
+			{
+				lower_->HandleRequest(addr ^ offset, config_.block_size, 1, set[set_num].way[last_visit].data,
+		                    		lower_hit, lower_time);		// write alloc: first read the block
+		        time += latency_.bus_latency + lower_time;
+				stats_.access_time += latency_.bus_latency;
+				
+				memcpy(set[set_num].way[last_visit].data + offset, content, bytes);	// write to cache block
+				set[set_num].way[last_visit].valid = true;
+				set[set_num].way[last_visit].have_write = true;
+				set[set_num].way[last_visit].tag = tag;
+				set[set_num].way[last_visit].last_visit_time = now_time++;
+			}
+			else	// write non_allocate
+			{
+				lower_->HandleRequest(addr, bytes, 0, content,
+									lower_hit, lower_time);		// write into lower layer
+				time += latency_.bus_latency + lower_time;
+				stats_.access_time += latency_.bus_latency;
+			}
+			
     		hit = 0;
     		time += latency_.bus_latency + lower_time;
     		stats_.access_time += latency_.bus_latency;
@@ -77,33 +92,48 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read,
 			int lower_hit, lower_time;
     		lower_->HandleRequest(addr ^ offset, config_.block_size, 1, set[set_num].way[last_visit].data,
                         		lower_hit, lower_time);
+            time += latency_.bus_latency + lower_time;
+			stats_.access_time += latency_.bus_latency;
+			
+			set[set_num].way[last_visit].valid = true;
+			set[set_num].way[last_visit].have_write = false;
+			set[set_num].way[last_visit].tag = tag;
+			set[set_num].way[last_visit].last_visit_time = now_time++;
 			memcpy(content, set[set_num].way[last_visit].data + offset, bytes);	// read from cache block
 			hit = 0;
-			time += latency_.bus_latency + lower_time;
-    		stats_.access_time += latency_.bus_latency;
 		}
 	}
 	else	// cache hit
 	{
 		#ifdef PROG_SIM
+		
 		for(int i = 0; i < config_.associativity; i++)
 		{
 			if(set[set_num].way[i].tag == tag && set[set_num].way[i].valid == 1)
 			{
 				if(read)
 					memcpy(content, set[set_num].way[i].data + offset, bytes);
-				else
+				else	// write hit: write into cache anyway
 				{
 					memcpy(set[set_num].way[i].data + offset, content, bytes);
-					set[set_num].way[i].have_write = true;
+					if(config_.write_through)
+					{
+						lower_->HandleRequest(addr, bytes, 0, content, lower_hit, lower_time);
+						time += latency_.bus_latency + lower_time;
+						stats_.access_time += latency_.bus_latency;
+					}
+					else	// write back
+					{
+						set[set_num].way[i].have_write = true;
+					}
 				}
 			}
+			time += latency_.bus_latency + latency_.hit_latency;
+			stats_.access_time += time;
 		}
 		#endif
 	  
 	  	hit = 1;
-		time += latency_.bus_latency + latency_.hit_latency;
-		stats_.access_time += time;
 		return;
 	}
 }
