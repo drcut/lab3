@@ -8,7 +8,7 @@
 #include <inttypes.h>
 #define TYPE_H
 #endif
-#define F_PATH "1.trace"
+//#define F_PATH "1.trace"
 int main(void) {
 	Memory m;
 
@@ -49,7 +49,10 @@ int main(void) {
   l1.SetLatency(ll);
 
   FILE*fp=NULL;//需要注意
-  fp=fopen(F_PATH,"r");
+  if(!strcmp(argv[1],"-1"))
+      fp=fopen("1.trace","r");
+  else if(!strcmp(argv[1],"-2"))
+      fp=fopen("2.trace","r");
 
   int hit, time;
   char content[64];
