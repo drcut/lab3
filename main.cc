@@ -28,7 +28,12 @@ int main(void) {
 	l1.SetLower(&m);
 
   StorageStats s;
+  s.access_counter = 0;
+  s.miss_num = 0;
   s.access_time = 0;
+  s.replace_num = 0;
+  s.fetch_num =0;
+  s.prefetch_num = 0;
   m.SetStats(s);
   l1.SetStats(s);
 
@@ -59,7 +64,11 @@ int main(void) {
   }
 l1.GetStats(s);
 printf("Total L1 access time: %dns\n", s.access_time);
+printf("Total L1 access count: %d\n", s.access_counter);
+printf("Total L1 miss count: %d\n", s.miss_num);
+printf("Total L1 miss rate: %f\n", (float)s.miss_num/(float)s.access_counter);
 m.GetStats(s);
 printf("Total Memory access time: %dns\n", s.access_time);
+printf("Total Memory access count: %d\n", s.access_counter);
   return 0;
 }
