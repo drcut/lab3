@@ -105,7 +105,7 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read,
 	}
 	else	// cache hit
 	{
-		#ifdef PROG_SIM
+		//#ifdef PROG_SIM
 		
 		for(int i = 0; i < config_.associativity; i++)
 		{
@@ -133,7 +133,7 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read,
 			//time += latency_.bus_latency + latency_.hit_latency;
 			//stats_.access_time += time;
 		}
-		#endif
+		//#endif
 	  	hit = 1;
 		return;
 	}
