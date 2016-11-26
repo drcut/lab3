@@ -176,7 +176,7 @@ class Cache: public Storage {
 	{
 		for(int i = 0; i < config_.set_num; i++)
 			for(int j = 0; j < config_.associativity; j++)
-				if(set[i].way[j].valid)
+				if(set[i].way[j].valid && set[i].way[j].have_write)
 				{
 					uint64_t addr = get_addr_by_cache(i, j);
 					memcpy(mem + addr, set[i].way[j].data, config_.block_size);

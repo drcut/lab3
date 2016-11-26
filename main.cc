@@ -22,35 +22,6 @@ int main(int argc, char **argv) {
 	Cache l1(cc);
 	l1.SetLower(&m);
 	
-	#ifdef PROG_SIM
-	//set LLC
-	cc.size = 8<<20;
-	cc.associativity = 8;
-	cc.block_size = 64;
-	cc.set_num = cc.size/(cc.associativity*cc.block_size);
-	cc.write_allocate = 1;
-	cc.write_through = 0;
-	Cache llc(cc);
-	llc.SetLower(&m);
-	//set L2
-	cc.size = 256<<10;
-	cc.associativity = 8;
-	cc.block_size = 64;
-	cc.set_num = cc.size/(cc.associativity*cc.block_size);
-	cc.write_allocate = 1;
-	cc.write_through = 0;
-	Cache l2(cc);
-	l2.SetLower(&llc);
-	//set l1
-	cc.size = 32<<10;
-	cc.associativity = 8;
-	cc.block_size = 64;
-	cc.set_num = cc.size/(cc.associativity*cc.block_size);
-	cc.write_allocate = 0;
-	Cache l1(cc);
-	l1.SetLower(&l2);
-	#endif
-	
 	/*printf("Cache_Size(KB):");
 	scanf("%d",&cc.size);
 	cc.size = (cc.size<<10);
@@ -64,7 +35,7 @@ int main(int argc, char **argv) {
   s.miss_num = 0;
   s.access_time = 0;
   s.replace_num = 0;
-  s.fetch_num =0;
+  s.fetch_num = 0;
   s.prefetch_num = 0;
   m.SetStats(s);
   l1.SetStats(s);
@@ -78,7 +49,8 @@ int main(int argc, char **argv) {
   ll.bus_latency =  0;//3;
   ll.hit_latency = 4;//cache size 32768 line size 64 associativity 8
   l1.SetLatency(ll);
-	
+
+/*
 #ifdef PROG_SIM
   StorageLatency l2l;
   l2l.bus_latency =  0;
@@ -90,12 +62,13 @@ int main(int argc, char **argv) {
   llcl.hit_latency = 11;//cache size 8388608 line size 64 associativity 8
   l1c.SetLatency(llcl);
 #endif
-	
-  FILE*fp=NULL;//需要注意
-  if(!strcmp(argv[1],"-1"))
-      fp=fopen("1.trace","r");
-  else if(!strcmp(argv[1],"-2"))
-      fp=fopen("2.trace","r");
+*/
+
+  FILE*fp = NULL;	//需要注意
+  if(strcmp(argv[1],"-1") == 0)
+      fp = fopen("1.trace","r");
+  else if(strcmp(argv[1],"-2") == 0)
+      fp = fopen("2.trace","r");
 
   int hit, time;
   char content[64];

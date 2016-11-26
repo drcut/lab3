@@ -97,15 +97,34 @@ void init(Addr entry)
 	main_mem.set_mem_data(mem_data);
 	
 	// Cache setting
-	CacheConfig cc1;
-	cc1.size = 1 << 15;
-	cc1.associativity = 32;
-	cc1.block_size = 32;
-	cc1.set_num = cc1.size/(cc1.associativity * cc1.block_size);
-	cc1.write_through = 1;
-	cc1.write_allocate = 0;
-	l1.SetConfig(cc1);
-	l1.SetLower(&main_mem);
+	CacheConfig cc;
+	//set LLC
+	cc.size = 8<<20;
+	cc.associativity = 8;
+	cc.block_size = 64;
+	cc.set_num = cc.size/(cc.associativity*cc.block_size);
+	cc.write_allocate = 1;
+	cc.write_through = 0;
+	llc.SetConfig(cc);
+	llc.SetLower(&main_mem);
+	//set L2
+	cc.size = 256<<10;
+	cc.associativity = 8;
+	cc.block_size = 64;
+	cc.set_num = cc.size/(cc.associativity*cc.block_size);
+	cc.write_allocate = 1;
+	cc.write_through = 0;
+	l2.SetConfig(cc);
+	l2.SetLower(&llc);
+	//set l1
+	cc.size = 32<<10;
+	cc.associativity = 8;
+	cc.block_size = 64;
+	cc.set_num = cc.size/(cc.associativity*cc.block_size);
+	cc.write_allocate = 1;
+	cc.write_through = 0;
+	l1.SetConfig(cc);
+	l1.SetLower(&l2);
 	
 	PC = entry;
 }
