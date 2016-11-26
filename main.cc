@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
   l1.SetStats(s);
 
   StorageLatency ml;
-  ml.bus_latency = 6;
+  ml.bus_latency = 0;//6;
   ml.hit_latency = 100;
   m.SetLatency(ml);
 
