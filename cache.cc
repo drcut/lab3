@@ -43,8 +43,8 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read,
 	
 	if(miss(addr,last_visit))
 	{
-		// Evicting old block (if needed) by LRU
-		if(set[set_num].way[last_visit].valid)
+		// Evicting old block by LRU, if not (write && write_non_allocate)
+		if(set[set_num].way[last_visit].valid && !(!read && !config_.write_allocate))
 		{
 			stats_.replace_num ++;
 			// If have_write, then need to write back
