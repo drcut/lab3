@@ -54,6 +54,7 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read,
 	  			//update time for write back
 	  			time += latency_.bus_latency;
 	  			//stats_.access_time += latency_.bus_latency;
+	  			stats_.fetch_num++;		// TEMP for write back count
 			}
 		}
 		
@@ -102,7 +103,7 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read,
 	{
 		for(int i = 0; i < config_.associativity; i++)
 		{
-			if(set[set_num].way[i].tag == tag && set[set_num].way[i].valid == 1)
+			if(set[set_num].way[i].tag == tag && set[set_num].way[i].valid)
 			{
 				if(read)
 				{
@@ -114,6 +115,9 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read,
 				{
 					memcpy(set[set_num].way[i].data + offset, content, bytes);
 					set[set_num].way[i].last_visit_time = now_time++;
+					time += latency_.bus_latency + latency_.hit_latency;
+					stats_.access_time += latency_.hit_latency;
+					
 					if(config_.write_through)
 					{
 						lower_->HandleRequest(addr, bytes, 0, content, lower_hit, time);
@@ -122,8 +126,8 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read,
 					{
 						set[set_num].way[i].have_write = true;
 					}
-					time += latency_.bus_latency + latency_.hit_latency;
-					stats_.access_time += latency_.hit_latency;
+					
+					stats_.prefetch_num++;	// TEMP for write hit count
 				}
 			}
 		}

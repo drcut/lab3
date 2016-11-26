@@ -19,6 +19,7 @@ int main(int argc, char **argv) {
 	cc.block_size = 64;
 	cc.set_num = cc.size/(cc.associativity*cc.block_size);
 	cc.write_allocate = 0;
+	cc.write_through = 1;
 	Cache l1(cc);
 	l1.SetLower(&m);
 	
@@ -76,12 +77,13 @@ int main(int argc, char **argv) {
   char action;
   //printf("uint64: %" PRIu64 "\n", num);
   //while(fscanf(fp,"%c	%d \n",&action,&addr)!=EOF)
-  while(fscanf(fp,"%c	%" PRIu64 " \n",&action,&addr)!=EOF)
-  {
-  	  //printf("%c  %" PRIu64 "\n",action,addr);
-	  l1.HandleRequest((uint64_t)addr, 0, 1, content, hit, time);
-	  //printf("Request access time: %dns\n", time);
-  }
+	while(fscanf(fp,"%c	%" PRIu64 " \n",&action,&addr)!=EOF)
+	{
+		if(action == 'r')
+			l1.HandleRequest((uint64_t)addr, 0, 1, content, hit, time);
+		else if(action == 'w')
+			l1.HandleRequest((uint64_t)addr, 0, 0, content, hit, time);
+	}
 	printf("Total time: %d cycles\n", time);
 	l1.GetStats(s);
 	printf("Total L1 access time: %d cycles\n", s.access_time);
@@ -89,6 +91,8 @@ int main(int argc, char **argv) {
 	printf("Total L1 miss count: %d\n", s.miss_num);
 	printf("Total L1 miss rate: %f\n", (float)s.miss_num/(float)s.access_counter);
 	printf("Total L1 replacement count: %d\n", s.replace_num);
+	printf("Total L1 writing back count: %d\n", s.fetch_num);
+	printf("Total L1 writing hit count: %d\n", s.prefetch_num);
 	m.GetStats(s);
 	printf("Total Memory access time: %d cycles\n", s.access_time);
 	printf("Total Memory access count: %d\n", s.access_counter);
