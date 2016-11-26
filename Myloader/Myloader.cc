@@ -136,7 +136,7 @@ int main(int argc, char **argv)
 		instr_count++;
 		stat = decode_and_run(IF);
 		//can refresh only in read call 
-		if(opcode(IF) == SYSTEM && (IF >> 20) == 0 && RegFile[17] == 63)//read call
+		if(opcode(IF) == SYSTEM && (IF >> 20) == 0 && (RegFile[17] == 63 || RegFile[17] == 169)) // read or time
 		{
 			//only need to sync the top layer?!may be it can tell us where the bug is
 			l1.sync_with_mem(mem_data);
