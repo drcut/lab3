@@ -135,17 +135,17 @@ int main(int argc, char **argv)
 		}
 		instr_count++;
 		
-		// write to mem before 'write'
-		if(opcode(IF) == SYSTEM && (IF >> 20) == 0 && RegFile[17] == 64) 	// write
+		// write to mem before 'read', 'write' or 'time'
+		if(opcode(IF) == SYSTEM && (IF >> 20) == 0 && (RegFile[17] == 63 || RegFile[17] == 64 || RegFile[17] == 169))
 		{
 			// only need to sync the top layer: just for faster
-			l1.sync_to_mem(mem_data);
-			l2.sync_to_mem(mem_data);
 			llc.sync_to_mem(mem_data);
+			l2.sync_to_mem(mem_data);
+			l1.sync_to_mem(mem_data);
 		}
 		stat = decode_and_run(IF);
 		// refresh cache after 'read' or 'time'
-		if(opcode(IF) == SYSTEM && (IF >> 20) == 0 && (RegFile[17] == 63 || RegFile[17] == 169)) // read or time
+		if(opcode(IF) == SYSTEM && (IF >> 20) == 0 && (RegFile[17] == 63 || RegFile[17] == 169))
 		{
 			// only need to sync the top layer: just for faster
 			l1.sync_from_mem(mem_data);

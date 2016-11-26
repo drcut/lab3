@@ -47,8 +47,8 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read,
 		if(set[set_num].way[last_visit].valid)
 		{
 			stats_.replace_num ++;
-			// If policy == write_back && have_write, then need to write back
-			if(!config_.write_through && set[set_num].way[last_visit].have_write)
+			// If have_write, then need to write back
+			if(set[set_num].way[last_visit].have_write)
 	  		{
 	  			lower_->HandleRequest(get_addr_by_cache(set_num, last_visit), config_.block_size, 0, set[set_num].way[last_visit].data,
 		                    		lower_hit, lower_time);		// write back
@@ -105,8 +105,6 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read,
 	}
 	else	// cache hit
 	{
-		//#ifdef PROG_SIM
-		
 		for(int i = 0; i < config_.associativity; i++)
 		{
 			if(set[set_num].way[i].tag == tag && set[set_num].way[i].valid == 1)
@@ -116,6 +114,7 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read,
 				else	// write hit: write into cache anyway
 				{
 					memcpy(set[set_num].way[i].data + offset, content, bytes);
+					set[set_num].way[i].last_visit_time = now_time++;
 					if(config_.write_through)
 					{
 						lower_->HandleRequest(addr, bytes, 0, content, lower_hit, lower_time);
@@ -133,9 +132,8 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read,
 			//time += latency_.bus_latency + latency_.hit_latency;
 			//stats_.access_time += time;
 		}
-		//#endif
+
 	  	hit = 1;
-		return;
 	}
 }
 
