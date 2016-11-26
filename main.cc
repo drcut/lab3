@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
 	Cache l1(cc);
 	l1.SetLower(&l2);
 	#endif
-	//#ifndef PROG_SIM
+	
 	/*printf("Cache_Size(KB):");
 	scanf("%d",&cc.size);
 	cc.size = (cc.size<<10);
@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
 	cc.write_allocate = 0;
 	Cache l1(cc);
 	l1.SetLower(&m);
-	//#endif
+	
 
   StorageStats s;
   s.access_counter = 0;
@@ -76,9 +76,22 @@ int main(int argc, char **argv) {
 
   StorageLatency ll;
   ll.bus_latency =  0;//3;
-  ll.hit_latency = 4;
+  ll.hit_latency = 4;//cache size 32768 line size 64 associativity 8
   l1.SetLatency(ll);
-
+	
+#ifdef PROG_SIM
+  StorageLatency l2l;
+  l2l.bus_latency =  0;
+  l2l.hit_latency = 4;//cache size 32768 line size 64 associativity 8
+  l2.SetLatency(l2l);
+	
+	
+  StorageLatency llcl;
+  llcl.bus_latency =  0;
+  llcl.hit_latency = 4;//cache size 32768 line size 64 associativity 8
+  l1c.SetLatency(llcl);
+#endif
+	
   FILE*fp=NULL;//需要注意
   if(!strcmp(argv[1],"-1"))
       fp=fopen("1.trace","r");
