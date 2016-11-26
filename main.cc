@@ -14,6 +14,14 @@ int main(int argc, char **argv) {
 
 	CacheConfig cc;
 	
+	cc.size = 32<<10;
+	cc.associativity = 8;
+	cc.block_size = 64;
+	cc.set_num = cc.size/(cc.associativity*cc.block_size);
+	cc.write_allocate = 0;
+	Cache l1(cc);
+	l1.SetLower(&m);
+	
 	#ifdef PROG_SIM
 	//set LLC
 	cc.size = 8<<20;
@@ -50,14 +58,6 @@ int main(int argc, char **argv) {
 	scanf("%d",&cc.block_size);
 	printf("set_associativity(way num):");
 	scanf("%d",&cc.associativity);*/
-	cc.size = 32<<10;
-	cc.associativity = 8;
-	cc.block_size = 64;
-	cc.set_num = cc.size/(cc.associativity*cc.block_size);
-	cc.write_allocate = 0;
-	Cache l1(cc);
-	l1.SetLower(&m);
-	
 
   StorageStats s;
   s.access_counter = 0;
@@ -84,7 +84,6 @@ int main(int argc, char **argv) {
   l2l.bus_latency =  0;
   l2l.hit_latency = 5;//cache size 262144 line size 64 associativity 8
   l2.SetLatency(l2l);
-	
 	
   StorageLatency llcl;
   llcl.bus_latency =  0;
