@@ -42,7 +42,7 @@ int main(int argc, char **argv) {
 	Cache l1(cc);
 	l1.SetLower(&l2);
 	#endif
-	#ifndef PROG_SIM
+	//#ifndef PROG_SIM
 	/*printf("Cache_Size(KB):");
 	scanf("%d",&cc.size);
 	cc.size = (cc.size<<10);
@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
 	cc.write_allocate = 0;
 	Cache l1(cc);
 	l1.SetLower(&m);
-	#endif
+	//#endif
 
   StorageStats s;
   s.access_counter = 0;
