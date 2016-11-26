@@ -128,7 +128,8 @@ class Cache: public Storage {
   
   uint64_t get_offset(uint64_t addr)
   {
-  	int offset = 0;
+       return addr & ((uint64_t)config_.block_size - 1);
+  	/*int offset = 0;
   	int tmp = config_.block_size;
   	while(tmp!=1)
   	{
@@ -138,7 +139,7 @@ class Cache: public Storage {
   	
   	uint64_t res = addr & ((1 << offset) - 1);
   	//printf("addr %" PRIu64 " offset %" PRIu64 "\n",addr,res);
-  	return res;
+  	return res;*/
   }
   
 	uint64_t get_addr_by_cache(int set_index, int way_index)

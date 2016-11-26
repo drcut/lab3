@@ -13,13 +13,8 @@ int main(int argc, char **argv) {
 	Memory m;
 
 	CacheConfig cc;
-	/*printf("Cache_Size(KB):");
-	scanf("%d",&cc.size);
-	cc.size = (cc.size<<10);
-	printf("Block_Size(byte):");
-	scanf("%d",&cc.block_size);
-	printf("set_associativity(way num):");
-	scanf("%d",&cc.associativity);*/
+	
+	#ifdef PROG_SIM
 	//set LLC
 	cc.size = 8<<20;
 	cc.associativity = 8;
@@ -46,6 +41,23 @@ int main(int argc, char **argv) {
 	cc.write_allocate = 0;
 	Cache l1(cc);
 	l1.SetLower(&l2);
+	#endif
+	#ifndef PROG_SIM
+	/*printf("Cache_Size(KB):");
+	scanf("%d",&cc.size);
+	cc.size = (cc.size<<10);
+	printf("Block_Size(byte):");
+	scanf("%d",&cc.block_size);
+	printf("set_associativity(way num):");
+	scanf("%d",&cc.associativity);*/
+	cc.size = 32<<10;
+	cc.associativity = 8;
+	cc.block_size = 64;
+	cc.set_num = cc.size/(cc.associativity*cc.block_size);
+	cc.write_allocate = 0;
+	Cache l1(cc);
+	l1.SetLower(&m);
+	#endif
 
   StorageStats s;
   s.access_counter = 0;
