@@ -161,7 +161,7 @@ class Cache: public Storage {
 	  	return (set[set_index].way[way_index].tag<<(offset_set+offset))+(set_index<<offset);
 	}
 	
-	void sync_with_mem(char* mem)
+	void sync_from_mem(char* mem)
 	{
 		for(int i = 0; i < config_.set_num; i++)
 			for(int j = 0; j < config_.associativity; j++)
@@ -169,6 +169,17 @@ class Cache: public Storage {
 				{
 					uint64_t addr = get_addr_by_cache(i, j);
 					memcpy(set[i].way[j].data, mem + addr, config_.block_size);
+				}
+	}
+	
+	void sync_to_mem(char* mem)
+	{
+		for(int i = 0; i < config_.set_num; i++)
+			for(int j = 0; j < config_.associativity; j++)
+				if(set[i].way[j].valid)
+				{
+					uint64_t addr = get_addr_by_cache(i, j);
+					memcpy(mem + addr, set[i].way[j].data, config_.block_size);
 				}
 	}
 	
