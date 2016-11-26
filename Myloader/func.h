@@ -50,17 +50,6 @@ void read_memory(void* buff, int size, Addr mem_address)
 	int hit;
 	int time = 0;
 	l1.HandleRequest(mem_address, size, 1, (char*)buff, hit, time);
-	
-	/*
-	if(size == 1)
-		*(char*)buff = *(char*)memptr(mem_address);
-	else if(size == 2)
-		*(short*)buff = *(short*)memptr(mem_address);
-	else if(size == 4)
-		*(int*)buff = *(int*)memptr(mem_address);
-	else if(size == 8)
-		*(long long*)buff = *(long long*)memptr(mem_address);
-	*/
 }
 void write_memory(void* buff, int size, Addr mem_address)
 {
@@ -73,17 +62,6 @@ void write_memory(void* buff, int size, Addr mem_address)
 	int hit;
 	int time = 0;
 	l1.HandleRequest(mem_address, size, 0, (char*)buff, hit, time);
-	
-	/*
-	if(size == 1)
-		*(char*)memptr(mem_address) = *(char*)buff;
-	else if(size == 2)
-		*(short*)memptr(mem_address) = *(short*)buff;
-	else if(size == 4)
-		*(int*)memptr(mem_address) = *(int*)buff;
-	else if(size == 8)
-		*(long long*)memptr(mem_address) = *(long long*)buff;
-	*/
 }
 
 void init(Addr entry)

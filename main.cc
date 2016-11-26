@@ -70,7 +70,7 @@ int main(int argc, char **argv) {
   else if(strcmp(argv[1],"-2") == 0)
       fp = fopen("2.trace","r");
 
-  int hit, time;
+  int hit, time = 0;
   char content[64];
   uint64_t addr;
   char action;
@@ -82,14 +82,15 @@ int main(int argc, char **argv) {
 	  l1.HandleRequest((uint64_t)addr, 0, 1, content, hit, time);
 	  //printf("Request access time: %dns\n", time);
   }
-l1.GetStats(s);
-printf("Total L1 access time: %dns\n", s.access_time);
-printf("Total L1 access count: %d\n", s.access_counter);
-printf("Total L1 miss count: %d\n", s.miss_num);
-printf("Total L1 miss rate: %f\n", (float)s.miss_num/(float)s.access_counter);
-printf("Total L1 replacement count: %d\n", s.replace_num);
-m.GetStats(s);
-printf("Total Memory access time: %dns\n", s.access_time);
-printf("Total Memory access count: %d\n", s.access_counter);
+	printf("Total time: %d cycles\n", time);
+	l1.GetStats(s);
+	printf("Total L1 access time: %d cycles\n", s.access_time);
+	printf("Total L1 access count: %d\n", s.access_counter);
+	printf("Total L1 miss count: %d\n", s.miss_num);
+	printf("Total L1 miss rate: %f\n", (float)s.miss_num/(float)s.access_counter);
+	printf("Total L1 replacement count: %d\n", s.replace_num);
+	m.GetStats(s);
+	printf("Total Memory access time: %d cycles\n", s.access_time);
+	printf("Total Memory access count: %d\n", s.access_counter);
   return 0;
 }

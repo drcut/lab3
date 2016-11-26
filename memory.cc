@@ -7,8 +7,8 @@ void Memory::HandleRequest(uint64_t addr, int bytes, int read,
 {
 	dbg_printf("Main memory visited\n");
 	hit = 1;
-	time = latency_.hit_latency + latency_.bus_latency;
-	stats_.access_time += time;
+	time += latency_.hit_latency + latency_.bus_latency;
+	stats_.access_time += latency_.hit_latency;
 	stats_.access_counter++;
   
 #ifdef PROG_SIM
