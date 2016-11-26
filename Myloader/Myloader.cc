@@ -136,7 +136,8 @@ int main(int argc, char **argv)
 		instr_count++;
 		
 		// write to mem before 'write'
-		if(opcode(IF) == SYSTEM && (IF >> 20) == 0 && RegFile[17] == 64) 	// write
+		if(opcode(IF) == SYSTEM)
+		//if(opcode(IF) == SYSTEM && (IF >> 20) == 0 && RegFile[17] == 64) 	// write
 		{
 			// only need to sync the top layer: just for faster
 			l1.sync_to_mem(mem_data);
