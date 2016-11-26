@@ -75,8 +75,8 @@ int main(int argc, char **argv) {
   m.SetLatency(ml);
 
   StorageLatency ll;
-  ll.bus_latency = 3;
-  ll.hit_latency = 10;
+  ll.bus_latency =  0;//3;
+  ll.hit_latency = 4;
   l1.SetLatency(ll);
 
   FILE*fp=NULL;//需要注意
