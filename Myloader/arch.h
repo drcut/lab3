@@ -18,6 +18,7 @@ Cache l1,l2,llc;
 
 Addr Stack_base = Mem_size - (1 << 12);		// save 4KB (may need to modify)
 Addr PC;
+int time = 0;
 
 long long op_count[255]={};
 
