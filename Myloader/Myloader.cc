@@ -239,6 +239,7 @@ int main(int argc, char **argv)
 	printf("FNMSUB count = %lld\n", op_count[FNMSUB]);
 	*/
 	// Exit
+	printf("Total time: %d cycles\n", time);
 	fclose(fp2);
 	fclose(fp);
 	return 0;
