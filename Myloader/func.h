@@ -48,7 +48,7 @@ void read_memory(void* buff, int size, Addr mem_address)
 		return;
 	}
 	int hit;
-	int time = 0;
+	//int time = 0;
 	l1.HandleRequest(mem_address, size, 1, (char*)buff, hit, time);
 }
 void write_memory(void* buff, int size, Addr mem_address)
@@ -60,7 +60,7 @@ void write_memory(void* buff, int size, Addr mem_address)
 		return;
 	}
 	int hit;
-	int time = 0;
+	//int time = 0;
 	l1.HandleRequest(mem_address, size, 0, (char*)buff, hit, time);
 }
 
