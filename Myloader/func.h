@@ -104,6 +104,23 @@ void init(Addr entry)
 	l1.SetConfig(cc);
 	l1.SetLower(&l2);
 	
+	StorageLatency ll;
+  ll.bus_latency =  0;//3;
+  ll.hit_latency = 4;//cache size 32768 line size 64 associativity 8
+  l1.SetLatency(ll);
+
+
+//#ifdef PROG_SIM
+  StorageLatency l2l;
+  l2l.bus_latency =  0;
+  l2l.hit_latency = 5;//cache size 262144 line size 64 associativity 8
+  l2.SetLatency(l2l);
+	
+  StorageLatency llcl;
+  llcl.bus_latency =  0;
+  llcl.hit_latency = 11;//cache size 8388608 line size 64 associativity 8
+  llc.SetLatency(llcl);
+	
 	PC = entry;
 }
 
