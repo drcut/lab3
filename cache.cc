@@ -114,7 +114,7 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read, char *content, int
 		}
 	}
 	
-	PrefetchAlgorithm(addr, now_time);
+	PrefetchAlgorithm(addr, now_time, config_.prefetch_strategy);
 }
 
 bool Cache::BypassDecision(uint64_t addr) {
@@ -137,23 +137,34 @@ int Cache::ReplaceDecision(uint64_t set_num) {
 	return last_visit;
 }
 
-void Cache::PrefetchAlgorithm(uint64_t addr, int now_time)
+void Cache::PrefetchAlgorithm(uint64_t addr, int now_time, int strategy)
 {
-	uint64_t pref_addr[4];
-	uint64_t read_addr[4];
-	int pref_cnt;
-	pattern.reg_and_prefetch(addr, pref_addr, pref_cnt);
-	for(int i = 0; i < pref_cnt; i++)
+	if(strategy == 1)			// Algebra sequence detecting
 	{
-		uint64_t s = get_set_num(pref_addr[i]);
-		uint64_t t = get_tag(pref_addr[i]);
-		uint64_t off = get_offset(pref_addr[i]);
-		read_addr[i] = pref_addr[i] ^ off;
-		if(i > 0 && read_addr[i] == read_addr[i-1])			// Do not load one block repeatedly
-			continue;
-			
+		uint64_t pref_addr[4];
+		uint64_t read_addr[5] = {addr ^ get_offset(addr)};
+		int pref_cnt;
+		pattern.reg_and_prefetch(addr, pref_addr, pref_cnt);
+		for(int i = 0; i < pref_cnt; i++)
+		{
+			uint64_t s = get_set_num(pref_addr[i]);
+			uint64_t t = get_tag(pref_addr[i]);
+			uint64_t off = get_offset(pref_addr[i]);
+			read_addr[i+1] = pref_addr[i] ^ off;
+			if(read_addr[i+1] == read_addr[i])			// Do not load one block repeatedly
+				continue;
+		
+			dbg_printf("-- Prefetch %lx\n", read_addr[i+1]);
+			int time;
+			Load_block(read_addr[i+1], now_time, s, ReplaceDecision(s), time);
+		}
+	}
+	else if(strategy == 2)		// Always next
+	{
+		uint64_t read_addr = addr ^ get_offset(addr);
+		uint64_t s = get_set_num(addr);
 		int time;
-		Load_block(read_addr[i], now_time, s, ReplaceDecision(s), time);
+		Load_block(read_addr + config_.block_size, now_time, s, ReplaceDecision(s), time);
 	}
 }
 

@@ -18,6 +18,7 @@ typedef struct CacheConfig_ {
   int write_through; // 0|1 for back|through
   int write_allocate; // 0|1 for no-alc|alc
   int block_size;
+  int prefetch_strategy;	// 0|1|2 for none|seq|next
 } CacheConfig;
 typedef struct CacheWay_{
 	uint64_t tag;
@@ -104,6 +105,7 @@ class Cache: public Storage {
 		{
 			if(addr == seq[0].last + seq[0].d)
 			{
+				seq[0].last = addr;
 				seq[0].recent = true;
 				seq[1].recent = false;
 				pref_cnt = 4;
@@ -113,6 +115,7 @@ class Cache: public Storage {
 			}
 			else if(addr == seq[1].last + seq[1].d)
 			{
+				seq[1].last = addr;
 				seq[1].recent = true;
 				seq[0].recent = false;
 				pref_cnt = 4;
@@ -292,8 +295,11 @@ class Cache: public Storage {
   // void ReplaceAlgorithm();
   
   // Prefetching
-  // int PrefetchDecision();
-  void PrefetchAlgorithm(uint64_t addr, int now_time);
+  // Strategies:
+  //	0: Do nothing
+  //	1: Algebra sequence detecting
+  //	2: Always next
+  void PrefetchAlgorithm(uint64_t addr, int now_time, int strategy);
 
   CacheSet* set;
   CacheConfig config_;
