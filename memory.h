@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "storage.h"
 
-#define dbg_printf
+#define dbg_printf printf
 
 class Memory: public Storage {
  public:

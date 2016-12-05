@@ -9,7 +9,7 @@
 #endif
 #include <cstring>
 
-#define dbg_printf
+#define dbg_printf printf
 
 typedef struct CacheConfig_ {
   int size;

@@ -8,22 +8,28 @@
 #include <inttypes.h>
 #define TYPE_H
 #endif
+
 //#define F_PATH "1.trace"
 int main(int argc, char **argv) {
 	Memory m;
 
 	CacheConfig cc;
+	/*
+	printf("Cache_Size(KB):");
+	scanf("%d",&cc.size);
+	cc.size = (cc.size<<10);
+	printf("Block_Size(byte):");
+	scanf("%d",&cc.block_size);
+	printf("set_associativity(way num):");
+	scanf("%d",&cc.associativity);
+	*/
+	cc.size = 32 << 10;
+	cc.block_size = 64;
+	cc.associativity = 8;
 	
-  printf("Cache_Size(KB):");
-  scanf("%d",&cc.size);
-  cc.size = (cc.size<<10);
-  printf("Block_Size(byte):");
-  scanf("%d",&cc.block_size);
-  printf("set_associativity(way num):");
-  scanf("%d",&cc.associativity);
 	cc.set_num = cc.size/(cc.associativity*cc.block_size);
-	cc.write_allocate = 0;
-	cc.write_through = 1;
+	cc.write_allocate = 1;
+	cc.write_through = 0;
 	Cache l1(cc);
 	l1.SetLower(&m);
 	
@@ -74,7 +80,7 @@ int main(int argc, char **argv) {
   char action;
   //printf("uint64: %" PRIu64 "\n", num);
   //while(fscanf(fp,"%c	%d \n",&action,&addr)!=EOF)
-	while(fscanf(fp,"%c	%" PRIu64 " \n",&action,&addr)!=EOF)
+	while(fscanf(fp,"%c	%lx\n",&action,&addr)!=EOF)
 	{
 		if(action == 'r')
 			l1.HandleRequest((uint64_t)addr, 0, 1, content, hit, time);
