@@ -9,12 +9,12 @@
 #endif
 #include <cstring>
 
-#define dbg_printf printf
+#define dbg_printf
 
 typedef struct CacheConfig_ {
-  int size;
-  int associativity;
-  int set_num; // Number of cache sets
+  uint64_t size;
+  uint64_t associativity;
+  uint64_t set_num; // Number of cache sets
   int write_through; // 0|1 for back|through
   int write_allocate; // 0|1 for no-alc|alc
   int block_size;
@@ -50,7 +50,9 @@ typedef struct CacheSet_{
 			way[i].init(cc);
 		}
 	}
-} CacheSet;
+} CacheSet;			
+			
+
 class Cache: public Storage {
  public:
   Cache(CacheConfig cc) 
@@ -83,13 +85,109 @@ class Cache: public Storage {
   	}
   	dbg_printf("Init cache\n");
   }
+  
+	struct Pattern
+	{
+		struct
+		{
+			uint64_t last = 0;
+			uint64_t d = 0;
+			bool recent = false;
+		} seq[2];
+		uint64_t hst[16];
+		uint64_t hst_p = 0;
+	
+		// addr: Last visited address
+		// pref_addr: the array of addresses to prefetch
+		// pref_cnt: how many addresses to prefetch
+		void reg_and_prefetch(uint64_t addr, uint64_t* pref_addr, int& pref_cnt)
+		{
+			if(addr == seq[0].last + seq[0].d)
+			{
+				seq[0].recent = true;
+				seq[1].recent = false;
+				pref_cnt = 4;
+				for(int i = 0; i < pref_cnt; i++)
+					pref_addr[i] = seq[0].last + seq[0].d * (i+1);
+				return;
+			}
+			else if(addr == seq[1].last + seq[1].d)
+			{
+				seq[1].recent = true;
+				seq[0].recent = false;
+				pref_cnt = 4;
+				for(int i = 0; i < pref_cnt; i++)
+					pref_addr[i] = seq[1].last + seq[1].d * (i+1);
+				return;
+			}
+			else
+			{
+				hst[hst_p] = addr;
+				
+				int i;
+				for(i = (hst_p + 15) % 16; i != hst_p; i = (i + 15) % 16)
+				{
+					uint64_t c_head = hst[i];
+					uint64_t d = addr - hst[i];
+					if(d == 0)
+						continue;			// Do not consider sequence with d = 0
+					
+					int id = i;
+					int rem = 2;
+					while(id != hst_p && rem > 0)
+					{
+						if(c_head - hst[id] == d)
+						{
+							rem--;
+							c_head = hst[id];
+						}
+						id = (id + 15) % 16;
+					}
+					
+					if(rem == 0)			// Good sequence found
+					{
+						int r = seq[0].recent ? 1 : 0;
+						seq[r].last = addr;
+						seq[r].d = d;
+						seq[r].recent = true;
+						seq[r^1].recent = false;
+						
+						pref_cnt = 4;
+						for(int i = 0; i < pref_cnt; i++)
+							pref_addr[i] = seq[r].last + seq[r].d * (i+1);
+						
+						break;
+					}
+				}
+				
+				if(i == hst_p)				// No sequence found
+					pref_cnt = 0;
+				
+				hst_p = (hst_p + 1) % 16;
+				return;
+			}
+		}
+	} pattern;
+	
   void GetConfig(CacheConfig &cc){ cc = config_; }
   void SetLower(Storage *ll) { lower_ = ll; }
-  bool miss(uint64_t addr,int& last_visit);
-  // Main access process
-  void HandleRequest(uint64_t addr, int bytes, int read,
-                     char *content, int &hit, int &time);
-                     
+  bool miss(uint64_t addr);
+
+	// Main access process
+	void HandleRequest(uint64_t addr, int bytes, int read, char *content, int &time);
+	
+	void Load_block(uint64_t addr, int &now_time, uint64_t set_num, uint64_t line_id, int &time)
+	{
+		CacheWay* cw = &set[set_num].way[line_id];
+		lower_->HandleRequest(addr, config_.block_size, 1, cw->data, time);
+		cw->valid = true;
+		cw->have_write = false;
+		cw->tag = get_tag(addr);
+		cw->last_visit_time = now_time++;
+		
+		time += latency_.bus_latency;
+	}	
+
   uint64_t get_set_num(uint64_t addr)
   {
   	int offset = 0;
@@ -186,15 +284,16 @@ class Cache: public Storage {
  private:
   int now_time;
   // Bypassing
-  int BypassDecision();
+  bool BypassDecision(uint64_t addr);
   // Partitioning
-  void PartitionAlgorithm();
+  // void PartitionAlgorithm();
   // Replacement
-  int ReplaceDecision();
-  void ReplaceAlgorithm();
+  int ReplaceDecision(uint64_t set_num);
+  // void ReplaceAlgorithm();
+  
   // Prefetching
-  int PrefetchDecision();
-  void PrefetchAlgorithm();
+  // int PrefetchDecision();
+  void PrefetchAlgorithm(uint64_t addr, int now_time);
 
   CacheSet* set;
   CacheConfig config_;

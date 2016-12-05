@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "storage.h"
 
-#define dbg_printf printf
+#define dbg_printf
 
 class Memory: public Storage {
  public:
@@ -16,8 +16,7 @@ class Memory: public Storage {
   }
 
   // Main access process
-  void HandleRequest(uint64_t addr, int bytes, int read,
-                     char *content, int &hit, int &time);
+  void HandleRequest(uint64_t addr, int bytes, int read, char *content, int &time);
 
  private:
   // Memory implement
