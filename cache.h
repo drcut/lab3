@@ -181,12 +181,12 @@ class Cache: public Storage {
   bool miss(uint64_t addr);
 
 	// Main access process
-	void HandleRequest(uint64_t addr, int bytes, int read, char *content, int &time);
+	void HandleRequest(uint64_t addr, int bytes, int read, char *content, int &time, bool prefetch);
 	
-	void Load_block(uint64_t addr, int &now_time, uint64_t set_num, uint64_t line_id, int &time)
+	void Load_block(uint64_t addr, int &now_time, uint64_t set_num, uint64_t line_id, int &time, bool prefetch)
 	{
 		CacheWay* cw = &set[set_num].way[line_id];
-		lower_->HandleRequest(addr, config_.block_size, 1, cw->data, time);
+		lower_->HandleRequest(addr, config_.block_size, 1, cw->data, time, prefetch);
 		cw->valid = true;
 		cw->have_write = false;
 		cw->tag = get_tag(addr);

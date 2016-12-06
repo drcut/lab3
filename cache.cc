@@ -17,12 +17,11 @@ bool Cache::miss(uint64_t addr)
 		}
 	}
 	dbg_printf("miss\n");
-	stats_.miss_num++;
 	return true;
 }
-void Cache::HandleRequest(uint64_t addr, int bytes, int read, char *content, int &time) {
+void Cache::HandleRequest(uint64_t addr, int bytes, int read, char *content, int &time, bool prefetch)
+{
 	int last_visit;
-	stats_.access_counter++;
 	
 	uint64_t set_num = get_set_num(addr);
 	uint64_t tag = get_tag(addr);
@@ -31,14 +30,22 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read, char *content, int
 	dbg_printf("Request type = %c, addr = 0x%016lx, len = %d\n", read?'r':'w', addr, bytes);
 	dbg_printf("tag = 0x%lx, set_num = 0x%lx, offset = 0x%lx\n", tag, set_num, offset);
 	
-	time += latency_.hit_latency;
-	stats_.access_time += latency_.hit_latency;
+	if(!prefetch)		// Prefetching does not need time
+	{
+		stats_.access_counter++;
+		time += latency_.hit_latency + latency_.bus_latency;
+		stats_.access_time += latency_.hit_latency + latency_.bus_latency;
+	}
+	
 	if(miss(addr))
 	{
+		if(!prefetch)
+			stats_.miss_num++;
+		
 		if(BypassDecision(addr))
 		{
-			lower_->HandleRequest(addr, bytes, 0, content, time);
-			time += latency_.bus_latency;
+			lower_->HandleRequest(addr, bytes, 0, content, time, prefetch);
+			// time += latency_.bus_latency;
 		}
 		else
 		{
@@ -52,9 +59,9 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read, char *content, int
 				if(set[set_num].way[last_visit].have_write)
 		  		{
 		  			uint64_t wb_addr = get_addr_by_cache(set_num, last_visit);
-		  			lower_->HandleRequest(wb_addr, config_.block_size, 0, set[set_num].way[last_visit].data, time);		// write back
+		  			lower_->HandleRequest(wb_addr, config_.block_size, 0, set[set_num].way[last_visit].data, time, prefetch);		// write back
 		  			//update time for write back
-		  			time += latency_.bus_latency;
+		  			// time += latency_.bus_latency;
 				}
 			}
 		
@@ -63,21 +70,21 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read, char *content, int
 			{
 				if(config_.write_allocate)
 				{
-					Load_block(addr ^ offset, now_time, set_num, last_visit, time);		// write alloc: first read the block
+					Load_block(addr ^ offset, now_time, set_num, last_visit, time, prefetch);		// write alloc: first read the block
 				
 					memcpy(set[set_num].way[last_visit].data + offset, content, bytes);	// write to cache block
 					set[set_num].way[last_visit].have_write = true;
 				}
 				else	// write non_allocate
 				{
-					lower_->HandleRequest(addr, bytes, 0, content, time);	// write into lower layer
-					time += latency_.bus_latency;
+					lower_->HandleRequest(addr, bytes, 0, content, time, prefetch);	// write into lower layer
+					// time += latency_.bus_latency;
 				}
 			}
 			else		// read
 			{
 				//read the data from lower level and then fill the block
-				Load_block(addr ^ offset, now_time, set_num, last_visit, time);
+				Load_block(addr ^ offset, now_time, set_num, last_visit, time, prefetch);
 
 				memcpy(content, set[set_num].way[last_visit].data + offset, bytes);	// read from cache block
 			}
@@ -100,8 +107,8 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read, char *content, int
 					
 					if(config_.write_through)
 					{
-						lower_->HandleRequest(addr, bytes, 0, content, time);
-						time += latency_.bus_latency;
+						lower_->HandleRequest(addr, bytes, 0, content, time, prefetch);
+						// time += latency_.bus_latency;
 					}
 					else	// write back
 					{
@@ -139,7 +146,7 @@ int Cache::ReplaceDecision(uint64_t set_num) {
 
 void Cache::PrefetchAlgorithm(uint64_t addr, int now_time, int strategy)
 {
-	int time;		// Temp
+	int time = -1;		// Temp
 	if(strategy == 1)			// Algebra sequence detecting
 	{
 		uint64_t pref_addr[4];
@@ -163,12 +170,12 @@ void Cache::PrefetchAlgorithm(uint64_t addr, int now_time, int strategy)
 				if(set[s].way[last_visit].have_write)
 			 	{
 			 		uint64_t wb_addr = get_addr_by_cache(s, last_visit);
-			 		lower_->HandleRequest(wb_addr, config_.block_size, 0, set[s].way[last_visit].data, time);		// write back
+			 		lower_->HandleRequest(wb_addr, config_.block_size, 0, set[s].way[last_visit].data, time, true);		// write back
 				}
 			}
 		
 			dbg_printf("-- Prefetch %lx\n", read_addr[i+1]);
-			Load_block(read_addr[i+1], now_time, s, last_visit, time);
+			Load_block(read_addr[i+1], now_time, s, last_visit, time, true);
 		}
 	}
 	else if(strategy == 2)		// Always next
@@ -184,11 +191,11 @@ void Cache::PrefetchAlgorithm(uint64_t addr, int now_time, int strategy)
 			if(set[s].way[last_visit].have_write)
 		 	{
 		 		uint64_t wb_addr = get_addr_by_cache(s, last_visit);
-		 		lower_->HandleRequest(wb_addr, config_.block_size, 0, set[s].way[last_visit].data, time);		// write back
+		 		lower_->HandleRequest(wb_addr, config_.block_size, 0, set[s].way[last_visit].data, time, true);		// write back
 			}
 		}
 		
-		Load_block(read_addr + config_.block_size, now_time, s, last_visit, time);
+		Load_block(read_addr + config_.block_size, now_time, s, last_visit, time, true);
 	}
 }
 

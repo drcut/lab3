@@ -2,12 +2,15 @@
 #include <cstdlib>
 #include <cstring>
 
-void Memory::HandleRequest(uint64_t addr, int bytes, int read, char *content, int &time)
+void Memory::HandleRequest(uint64_t addr, int bytes, int read, char *content, int &time, bool prefetch)
 {
-	dbg_printf("Main memory visited\n");
-	time += latency_.hit_latency;
-	stats_.access_time += latency_.hit_latency;
-	stats_.access_counter++;
+	if(!prefetch)
+	{
+		dbg_printf("Main memory visited\n");
+		time += latency_.hit_latency + latency_.bus_latency;
+		stats_.access_time += latency_.hit_latency + latency_.bus_latency;
+		stats_.access_counter++;
+	}
   
 #ifdef PROG_SIM
 	if(read)

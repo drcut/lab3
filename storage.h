@@ -42,7 +42,7 @@ class Storage {
   // [i|o] content: in|out data
   // [out] hit: 0|1 for miss|hit
   // [out] time: total access time
-  virtual void HandleRequest(uint64_t addr, int bytes, int read, char *content, int &time) = 0;
+  virtual void HandleRequest(uint64_t addr, int bytes, int read, char *content, int &time, bool prefetch) = 0;
 
  protected:
   StorageStats stats_;
