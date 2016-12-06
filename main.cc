@@ -19,6 +19,13 @@ int main(int argc, char **argv) {
 		"../MyTraces/quicksort.txt"
 	};
 	
+	char output_log[3][100] = 
+	{
+		"Never-prefetch.log",
+		"Seq-prefetch.log",
+		"Always-next.log",
+	};
+	
 	for(int trc = 0; trc <= 3; trc++)
 	for(int st = 0; st <= 2; st++)
 	{
@@ -58,30 +65,21 @@ int main(int argc, char **argv) {
 		  l1.SetStats(s);
 
 		  StorageLatency ml;
-		  ml.bus_latency = 0;//6;
+		  ml.bus_latency = 0;	//6;
 		  ml.hit_latency = 100;
 		  m.SetLatency(ml);
 
 		  StorageLatency ll;
-		  ll.bus_latency =  0;//3;
-		  ll.hit_latency = 4;//cache size 32768 line size 64 associativity 8
+		  ll.bus_latency =  0;	//3;
+		  ll.hit_latency = 4;	//cache size 32768 line size 64 associativity 8
 		  l1.SetLatency(ll);
 
-/*
-#ifdef PROG_SIM
-  StorageLatency l2l;
-  l2l.bus_latency =  0;
-  l2l.hit_latency = 5;//cache size 262144 line size 64 associativity 8
-  l2.SetLatency(l2l);
-	
-  StorageLatency llcl;
-  llcl.bus_latency =  0;
-  llcl.hit_latency = 11;//cache size 8388608 line size 64 associativity 8
-  l1c.SetLatency(llcl);
-#endif
-*/
 
-		l1.SetConfig(cc);
+		// freopen(output_log[st], "w", stdout);
+		
+		printf("Trace file: %s\n", trace_name[trc]);
+		printf("Prefetch strategy: %d\n", st);
+		
 		FILE* fp = NULL;	// Be careful
 		/*
 		if(strcmp(argv[1],"-1") == 0)
@@ -96,15 +94,14 @@ int main(int argc, char **argv) {
 		char content[64];
 		uint64_t addr;
 		char action;
-		while(fscanf(fp,"%c	%lx\n",&action,&addr)!=EOF)
+		while(fscanf(fp,"%c	%lx\n",&action,&addr) != EOF)
 		{
 			if(action == 'r')
 				l1.HandleRequest((uint64_t)addr, 0, 1, content, time);
 			else if(action == 'w')
 				l1.HandleRequest((uint64_t)addr, 0, 0, content, time);
 		}
-		printf("Trace file: %s\n", trace_name[trc]);
-		printf("Prefetch strategy: %d\n", st);
+		
 		printf("Total time: %d cycles\n", time);
 		l1.GetStats(s);
 		printf("Total L1 access time: %d cycles\n", s.access_time);

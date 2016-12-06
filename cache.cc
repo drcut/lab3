@@ -139,6 +139,7 @@ int Cache::ReplaceDecision(uint64_t set_num) {
 
 void Cache::PrefetchAlgorithm(uint64_t addr, int now_time, int strategy)
 {
+	int time;		// Temp
 	if(strategy == 1)			// Algebra sequence detecting
 	{
 		uint64_t pref_addr[4];
@@ -154,17 +155,40 @@ void Cache::PrefetchAlgorithm(uint64_t addr, int now_time, int strategy)
 			if(read_addr[i+1] == read_addr[i])			// Do not load one block repeatedly
 				continue;
 		
+			// Evicting old block
+			int last_visit = ReplaceDecision(s);
+			if(set[s].way[last_visit].valid)
+			{
+				// If have_write, then need to write back
+				if(set[s].way[last_visit].have_write)
+			 	{
+			 		uint64_t wb_addr = get_addr_by_cache(s, last_visit);
+			 		lower_->HandleRequest(wb_addr, config_.block_size, 0, set[s].way[last_visit].data, time);		// write back
+				}
+			}
+		
 			dbg_printf("-- Prefetch %lx\n", read_addr[i+1]);
-			int time;
-			Load_block(read_addr[i+1], now_time, s, ReplaceDecision(s), time);
+			Load_block(read_addr[i+1], now_time, s, last_visit, time);
 		}
 	}
 	else if(strategy == 2)		// Always next
 	{
 		uint64_t read_addr = addr ^ get_offset(addr);
 		uint64_t s = get_set_num(addr);
-		int time;
-		Load_block(read_addr + config_.block_size, now_time, s, ReplaceDecision(s), time);
+		
+		// Evicting old block
+		int last_visit = ReplaceDecision(s);
+		if(set[s].way[last_visit].valid)
+		{
+			// If have_write, then need to write back
+			if(set[s].way[last_visit].have_write)
+		 	{
+		 		uint64_t wb_addr = get_addr_by_cache(s, last_visit);
+		 		lower_->HandleRequest(wb_addr, config_.block_size, 0, set[s].way[last_visit].data, time);		// write back
+			}
+		}
+		
+		Load_block(read_addr + config_.block_size, now_time, s, last_visit, time);
 	}
 }
 

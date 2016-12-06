@@ -108,7 +108,7 @@ class Cache: public Storage {
 				seq[0].last = addr;
 				seq[0].recent = true;
 				seq[1].recent = false;
-				pref_cnt = 4;
+				pref_cnt = 1;
 				for(int i = 0; i < pref_cnt; i++)
 					pref_addr[i] = seq[0].last + seq[0].d * (i+1);
 				return;
@@ -118,7 +118,7 @@ class Cache: public Storage {
 				seq[1].last = addr;
 				seq[1].recent = true;
 				seq[0].recent = false;
-				pref_cnt = 4;
+				pref_cnt = 1;
 				for(int i = 0; i < pref_cnt; i++)
 					pref_addr[i] = seq[1].last + seq[1].d * (i+1);
 				return;
@@ -135,10 +135,14 @@ class Cache: public Storage {
 					if(d == 0)
 						continue;			// Do not consider sequence with d = 0
 					
-					int id = i;
-					int rem = 2;
+					int id = (hst_p + 15) % 16;
+					int rem = 3;
 					while(id != hst_p && rem > 0)
 					{
+						if( (hst[id] - (c_head+d)) * (hst[id] - (c_head-d)) < 0 )	// c_head - |d| < hst[id] < c_head + |d|
+						{
+							break;
+						}
 						if(c_head - hst[id] == d)
 						{
 							rem--;
@@ -155,7 +159,7 @@ class Cache: public Storage {
 						seq[r].recent = true;
 						seq[r^1].recent = false;
 						
-						pref_cnt = 4;
+						pref_cnt = 1;
 						for(int i = 0; i < pref_cnt; i++)
 							pref_addr[i] = seq[r].last + seq[r].d * (i+1);
 						
