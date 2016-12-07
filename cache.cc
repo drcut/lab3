@@ -144,7 +144,7 @@ int Cache::ReplaceDecision(uint64_t set_num) {
 		}
 	}
 	//LFU
-	for(int i = 0;i<config_.associativity;i++)
+	/*for(int i = 0;i<config_.associativity;i++)
 	{
 		if(set[set_num].way[i].used_time < set[set_num].way[last_visit].used_time && set[set_num].way[i].valid)
 			last_visit = i;
@@ -164,7 +164,7 @@ int Cache::ReplaceDecision(uint64_t set_num) {
 			last_visit = i;
 			break;
 		}
-	}
+	}*/
 	return last_visit;
 }
 
