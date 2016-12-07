@@ -25,17 +25,18 @@ int main(int argc, char **argv) {
 		"Seq-prefetch.log",
 		"Always-next.log",
 	};
-    char switch_type[3][10]=
+    char switch_type[4][10]=
     {
         "LRU",
         "LFU",
         "FIFO",
+        "SRAND",
     };
     //int switch_strategy;
     //scanf("%d",switch_strategy);
 	for(int trc = 0; trc <= 3; trc++)
 	for(int st = 0; st <= 2; st++)
-    for(int swi = 0;swi <=2; swi++)
+    for(int swi = 0;swi <=3; swi++)
 	{
 		Memory m;
 

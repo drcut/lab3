@@ -1,7 +1,8 @@
 #include "cache.h"
 #include "def.h"
 #include <cstring>
-
+#include <stdlib.h>
+#include <time.h>
 bool Cache::miss(uint64_t addr)
 {
 	uint64_t set_num = get_set_num(addr);
@@ -173,6 +174,12 @@ int Cache::ReplaceDecision(uint64_t set_num) {
 			break;
 		}
     }break;
+    }
+    case 3:{
+    //SRAND
+        srand((unsigned) time(NULL));
+        last_visit = rand()%config_.associativity;
+        break;
     }
     }
 	return last_visit;
