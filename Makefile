@@ -1,6 +1,6 @@
 CC=g++
 
-all: sim prog_sim
+all: sim 
 
 sim: main.o cache.o memory.o
 	$(CC) -o $@ $^

@@ -1,0 +1,23 @@
+单层cache：
+small time = 1592600
+small index 1 = 16
+
+size:128K
+associativity = 1
+
+两层:
+
+small time = 1593492
+small index 1 = 16 small_index_2=26
+layer1 size:128K ass:1
+layer2 size:256K ass:4
+
+三层：
+
+small time = 1623798
+small index 1 = 8 small_index_2=16 small_index_3=26
+layer1 size:64K ass:1
+layer2 size:128K ass:1
+layer3 size:256K ass:4
+
+

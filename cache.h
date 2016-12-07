@@ -29,6 +29,10 @@ typedef struct CacheWay_{
 	{
 		data = NULL;
 	}
+      ~CacheWay_()
+      {
+        if(data!=NULL)delete [] data;
+      }
 	void init(CacheConfig cc)
 	{
 		data = new char[cc.block_size];
@@ -42,6 +46,10 @@ typedef struct CacheSet_{
 	{
 		way = NULL;
 	}
+        ~CacheSet_()
+        {
+          if(way!=NULL)delete [] way;
+        }
 	void init(CacheConfig cc)
 	{
 		way = new CacheWay[cc.associativity];
@@ -58,7 +66,6 @@ class Cache: public Storage {
   	now_time = 0;
   	set = NULL;
   	lower_ = NULL;
-  	
   	SetConfig(cc);
   }
   
@@ -68,14 +75,20 @@ class Cache: public Storage {
   	set = NULL;
   	lower_ = NULL;
   }
-
+  void fresh()
+  {
+    if(set!=NULL)
+    delete [] set;
+    //printf("finish fresh\n");
+  }
   // Sets & Gets
   void SetConfig(CacheConfig cc)
   {
   	config_ = cc;
   	
-  	if(set != NULL)
-  		delete(set);
+  	//if(set != NULL)
+             // delete [] set;
+  		//delete(set);
   	set = new CacheSet[cc.set_num];
   	for(int i = 0; i < cc.set_num; i++)
   	{
