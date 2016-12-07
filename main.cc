@@ -13,10 +13,10 @@
 int main(int argc, char **argv) {
 	char trace_name[4][100] = 
 	{
-		"../MyTraces/ackerman.txt",
-		"../MyTraces/dr2_loop1.txt",
-		"../MyTraces/matrix.txt",
-		"../MyTraces/quicksort.txt"
+		"MyTraces/ackerman.txt",
+		"MyTraces/dr2_loop1.txt",
+		"MyTraces/matrix.txt",
+		"MyTraces/quicksort.txt"
 	};
 	
 	char output_log[3][100] = 
@@ -25,9 +25,17 @@ int main(int argc, char **argv) {
 		"Seq-prefetch.log",
 		"Always-next.log",
 	};
-	
+    char switch_type[3][10]=
+    {
+        "LRU",
+        "LFU",
+        "FIFO",
+    };
+    //int switch_strategy;
+    //scanf("%d",switch_strategy);
 	for(int trc = 0; trc <= 3; trc++)
 	for(int st = 0; st <= 2; st++)
+    for(int swi = 0;swi <=2; swi++)
 	{
 		Memory m;
 
@@ -42,6 +50,7 @@ int main(int argc, char **argv) {
 		scanf("%d",&cc.associativity);
 		*/
 		cc2.prefetch_strategy = st;
+        cc2.switch_strategy = swi;
 		cc2.size = 256 << 10;
 		cc2.block_size = 64;
 		cc2.associativity = 8;
@@ -53,6 +62,7 @@ int main(int argc, char **argv) {
 		l2.SetLower(&m);
 		
 		cc1.prefetch_strategy = st;
+        cc1.switch_strategy = swi;
 		cc1.size = 32 << 10;
 		cc1.block_size = 64;
 		cc1.associativity = 8;
@@ -91,6 +101,7 @@ int main(int argc, char **argv) {
 		
 		printf("Trace file: %s\n", trace_name[trc]);
 		printf("Prefetch strategy: %d\n", st);
+        printf("Switch strategy: %s\n",switch_type[swi]);
 		
 		FILE* fp = NULL;	// Be careful
 		/*
