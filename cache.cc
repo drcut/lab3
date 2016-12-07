@@ -30,7 +30,8 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read,
 	hit = 0;
 	int last_visit;
 	stats_.access_counter++;
-	
+	//update time
+	time +=latency_.bus_latency+latency_.hit_latency;
 	uint64_t set_num = get_set_num(addr);
 	uint64_t tag = get_tag(addr);
 	uint64_t offset = get_offset(addr);
@@ -52,7 +53,7 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read,
 	  			lower_->HandleRequest(get_addr_by_cache(set_num, last_visit), config_.block_size, 0, set[set_num].way[last_visit].data,
 		                    		lower_hit, time);		// write back
 	  			//update time for write back
-	  			time += latency_.bus_latency;
+	  			//time += latency_.bus_latency;
 	  			//stats_.access_time += latency_.bus_latency;
 	  			stats_.fetch_num++;		// TEMP for write back count
 			}
@@ -65,7 +66,7 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read,
 			{
 				lower_->HandleRequest(addr ^ offset, config_.block_size, 1, set[set_num].way[last_visit].data,
 		                    		lower_hit, time);		// write alloc: first read the block
-		        time += latency_.bus_latency;
+		        //time += latency_.bus_latency;
 				//stats_.access_time += latency_.bus_latency;
 				
 				memcpy(set[set_num].way[last_visit].data + offset, content, bytes);	// write to cache block
@@ -77,7 +78,7 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read,
 			else	// write non_allocate
 			{
 				lower_->HandleRequest(addr, bytes, 0, content, lower_hit, time);		// write into lower layer
-				time += latency_.bus_latency;
+				//time += latency_.bus_latency;
 				//stats_.access_time += latency_.bus_latency;
 			}
 			
@@ -88,7 +89,7 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read,
 			//read the data from lower level and then fill the block
     		lower_->HandleRequest(addr ^ offset, config_.block_size, 1, set[set_num].way[last_visit].data,
                         		lower_hit, time);
-            time += latency_.bus_latency;
+            //time += latency_.bus_latency;
 			//stats_.access_time += latency_.bus_latency;
 			
 			set[set_num].way[last_visit].valid = true;
@@ -108,14 +109,14 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read,
 				if(read)
 				{
 					memcpy(content, set[set_num].way[i].data + offset, bytes);
-					time += latency_.bus_latency + latency_.hit_latency;
+					//time += latency_.bus_latency + latency_.hit_latency;
 					stats_.access_time += latency_.hit_latency;
 				}
 				else	// write hit: write into cache anyway
 				{
 					memcpy(set[set_num].way[i].data + offset, content, bytes);
 					set[set_num].way[i].last_visit_time = now_time++;
-					time += latency_.bus_latency + latency_.hit_latency;
+					//time += latency_.bus_latency + latency_.hit_latency;
 					stats_.access_time += latency_.hit_latency;
 					
 					if(config_.write_through)
