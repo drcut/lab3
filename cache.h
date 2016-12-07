@@ -24,6 +24,7 @@ typedef struct CacheWay_{
 	uint64_t tag;
 	int last_visit_time;
 	int used_time;
+	int comein_time;
 	bool valid;
 	char* data;
 	bool have_write;
@@ -193,6 +194,7 @@ class Cache: public Storage {
 		cw->tag = get_tag(addr);
 		cw->last_visit_time = now_time++;
 		cw->used_time++;
+		cw->comein_time = now_time;
 		time += latency_.bus_latency;
 	}	
 
