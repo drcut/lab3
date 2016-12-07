@@ -192,7 +192,7 @@ class Cache: public Storage {
 		cw->have_write = false;
 		cw->tag = get_tag(addr);
 		cw->last_visit_time = now_time++;
-		
+		cw->used_time++;
 		time += latency_.bus_latency;
 	}	
 
