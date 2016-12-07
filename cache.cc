@@ -12,6 +12,7 @@ bool Cache::miss(uint64_t addr)
 		if(set[set_num].way[i].tag == tag && set[set_num].way[i].valid)
 		{
 			set[set_num].way[i].last_visit_time = now_time++;
+			set[set_num].way[i].used_time++;
 			dbg_printf("hit\n");
 			return false;
 		}
@@ -131,9 +132,32 @@ bool Cache::BypassDecision(uint64_t addr) {
 int Cache::ReplaceDecision(uint64_t set_num) {
 	
 	int last_visit = 0;
+	//LRU
 	for(int i = 1; i < config_.associativity; i++)
 	{
 		if(set[set_num].way[i].last_visit_time < set[set_num].way[last_visit].last_visit_time && set[set_num].way[i].valid)			
+			last_visit = i;
+		if(set[set_num].way[i].valid == 0)	//prefer to use the empty block
+		{
+			last_visit = i;
+			break;
+		}
+	}
+	//LFU
+	for(int i = 0;i<config_.associativity;i++)
+	{
+		if(set[set_num].way[i].used_time < set[set_num].way[last_visit].used_time && set[set_num].way[i].valid)
+			last_visit = i;
+		if(set[set_num].way[i].valid == 0)	//prefer to use the empty block
+		{
+			last_visit = i;
+			break;
+		}
+	}
+	//FIFO
+	for(int i = 0;i<config_.associativity;i++)
+	{
+		if(set[set_num].way[i].comein_time < set[set_num].way[last_visit].comein_time && set[set_num].way[i].valid)//comrin_time too large?
 			last_visit = i;
 		if(set[set_num].way[i].valid == 0)	//prefer to use the empty block
 		{
