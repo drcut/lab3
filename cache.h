@@ -23,6 +23,7 @@ typedef struct CacheConfig_ {
 typedef struct CacheWay_{
 	uint64_t tag;
 	int last_visit_time;
+	int used_time;
 	bool valid;
 	char* data;
 	bool have_write;
