@@ -13,10 +13,10 @@
 int main(int argc, char **argv) {
 	char trace_name[4][100] = 
 	{
-		"../MyTraces/ackerman.txt",
-		"../MyTraces/dr2_loop1.txt",
-		"../MyTraces/matrix.txt",
-		"../MyTraces/quicksort.txt"
+		"MyTraces/ackerman.txt",
+		"MyTraces/dr2_loop1.txt",
+		"MyTraces/matrix.txt",
+		"MyTraces/quicksort.txt"
 	};
 	
 	char output_log[3][100] = 
