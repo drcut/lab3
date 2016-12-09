@@ -1,7 +1,8 @@
 #include "cache.h"
 #include "def.h"
 #include <cstring>
-
+#include <stdlib.h>
+#include <time.h>
 bool Cache::miss(uint64_t addr)
 {
 	uint64_t set_num = get_set_num(addr);
@@ -132,6 +133,8 @@ bool Cache::BypassDecision(uint64_t addr) {
 int Cache::ReplaceDecision(uint64_t set_num) {
 	
 	int last_visit = 0;
+    switch(config_.switch_strategy){
+    case 0:{
 	//LRU
 	for(int i = 1; i < config_.associativity; i++)
 	{
@@ -143,8 +146,11 @@ int Cache::ReplaceDecision(uint64_t set_num) {
 			break;
 		}
 	}
+            break;
+    }
+    case 1:{
 	//LFU
-	/*for(int i = 0;i<config_.associativity;i++)
+	for(int i = 0;i<config_.associativity;i++)
 	{
 		if(set[set_num].way[i].used_time < set[set_num].way[last_visit].used_time && set[set_num].way[i].valid)
 			last_visit = i;
@@ -154,6 +160,9 @@ int Cache::ReplaceDecision(uint64_t set_num) {
 			break;
 		}
 	}
+        break;
+    }
+    case 2:{
 	//FIFO
 	for(int i = 0;i<config_.associativity;i++)
 	{
@@ -164,7 +173,15 @@ int Cache::ReplaceDecision(uint64_t set_num) {
 			last_visit = i;
 			break;
 		}
-	}*/
+    }break;
+    }
+    case 3:{
+    //SRAND
+        srand((unsigned) time(NULL));
+        last_visit = rand()%config_.associativity;
+        break;
+    }
+    }
 	return last_visit;
 }
 

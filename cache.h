@@ -19,6 +19,7 @@ typedef struct CacheConfig_ {
   int write_allocate; // 0|1 for no-alc|alc
   int block_size;
   int prefetch_strategy;	// 0|1|2 for none|seq|next
+  int switch_strategy;      // 0|1|2 for LRU|LFU|FIFO
 } CacheConfig;
 typedef struct CacheWay_{
 	uint64_t tag;
