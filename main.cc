@@ -11,35 +11,38 @@
 
 //#define F_PATH "1.trace"
 int main(int argc, char **argv) {
-	char trace_name[4][100] = 
+	char trace_name[6][100] = 
 	{
 		"MyTraces/ackerman.txt",
 		"MyTraces/dr2_loop1.txt",
 		"MyTraces/matrix.txt",
-		"MyTraces/quicksort.txt"
+		"MyTraces/quicksort.txt",
+		"1.trace",
+		"2.trace"
 	};
 	
-	char output_log[3][100] = 
+	char prefetch_type[4][100] = 
 	{
-		"Never-prefetch.log",
-		"Seq-prefetch.log",
-		"Always-next.log",
+		"Never-prefetch",
+		"Seq-prefetch",
+		"Always-next",
+		"Seq-and-next"
 	};
     char switch_type[4][10]=
     {
         "LRU",
         "LFU",
         "FIFO",
-        "SRAND",
+        "RAND",
     };
     //int switch_strategy;
     //scanf("%d",switch_strategy);
-	for(int trc = 0; trc <= 3; trc++)
-	for(int st = 0; st <= 2; st++)
-    for(int swi = 0;swi <=3; swi++)
+	for(int trc = 0; trc <= 5; trc++)
+	for(int by = 0; by <= 1; by++)
+	for(int pref = 0; pref <= 3; pref++)
+    for(int swi = 0; swi <= 3; swi++)
 	{
 		Memory m;
-
 		CacheConfig cc1, cc2;
 		/*
 		printf("Cache_Size(KB):");
@@ -50,8 +53,9 @@ int main(int argc, char **argv) {
 		printf("set_associativity(way num):");
 		scanf("%d",&cc.associativity);
 		*/
-		cc2.prefetch_strategy = st;
+		cc2.prefetch_strategy = pref;
         cc2.switch_strategy = swi;
+        cc2.bypass_strategy = by;
 		cc2.size = 256 << 10;
 		cc2.block_size = 64;
 		cc2.associativity = 8;
@@ -62,8 +66,9 @@ int main(int argc, char **argv) {
 		Cache l2(cc2);
 		l2.SetLower(&m);
 		
-		cc1.prefetch_strategy = st;
+		cc1.prefetch_strategy = pref;
         cc1.switch_strategy = swi;
+        cc1.bypass_strategy = by;
 		cc1.size = 32 << 10;
 		cc1.block_size = 64;
 		cc1.associativity = 8;
@@ -101,8 +106,9 @@ int main(int argc, char **argv) {
 		// freopen(output_log[st], "w", stdout);
 		
 		printf("Trace file: %s\n", trace_name[trc]);
-		printf("Prefetch strategy: %d\n", st);
-        printf("Switch strategy: %s\n",switch_type[swi]);
+		printf("Bypass strategy: %c\n", by ? 'Y' : 'N');
+		printf("Prefetch strategy: %s\n", prefetch_type[pref]);
+        printf("Switch strategy: %s\n", switch_type[swi]);
 		
 		FILE* fp = NULL;	// Be careful
 		/*
@@ -127,6 +133,7 @@ int main(int argc, char **argv) {
 		}
 		
 		printf("Total time: %d cycles\n", time);
+		/*
 		l1.GetStats(s);
 		printf("Total L1 access time: %d cycles\n", s.access_time);
 		printf("Total L1 access count: %d\n", s.access_counter);
@@ -144,7 +151,9 @@ int main(int argc, char **argv) {
 		
 		m.GetStats(s);
 		printf("Total Memory access time: %d cycles\n", s.access_time);
-		printf("Total Memory access count: %d\n\n", s.access_counter);
+		printf("Total Memory access count: %d\n", s.access_counter);
+		*/
+		printf("\n");
 		fclose(fp);
 	}
 	return 0;

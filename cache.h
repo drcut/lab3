@@ -18,8 +18,9 @@ typedef struct CacheConfig_ {
   int write_through; // 0|1 for back|through
   int write_allocate; // 0|1 for no-alc|alc
   int block_size;
-  int prefetch_strategy;	// 0|1|2 for none|seq|next
-  int switch_strategy;      // 0|1|2 for LRU|LFU|FIFO
+  int prefetch_strategy;	// 0|1|2|3 for none|seq|next|seq+next
+  int switch_strategy;      // 0|1|2|3 for LRU|LFU|FIFO|Rand
+  int bypass_strategy;		// 0|1 for none|do
 } CacheConfig;
 typedef struct CacheWay_{
 	uint64_t tag;
@@ -87,20 +88,39 @@ class Cache: public Storage {
   	{
   		set[i].init(cc);
   	}
+  	pattern.init();
+  	
   	dbg_printf("Init cache\n");
   }
+  
+  void GetConfig(CacheConfig &cc){ cc = config_; }
   
 	struct Pattern
 	{
 		struct
 		{
-			uint64_t last = 0;
-			uint64_t d = 0;
-			bool recent = false;
+			uint64_t last;
+			uint64_t d;
+			bool recent;
 		} seq[2];
 		uint64_t hst[16];
-		uint64_t hst_p = 0;
+		uint64_t hst_p;
 	
+		void init()
+		{
+			seq[0].last = seq[1].last = 0;
+			seq[0].d = seq[1].d = 0;
+			seq[0].recent = seq[1].recent = false;
+			memset((void*)hst, 0, sizeof(hst));
+			hst_p = 0;
+		}
+		
+		void reg_hst(uint64_t addr)
+		{
+			hst_p = (hst_p + 1) % 16;
+			hst[hst_p] = addr;
+		}
+		
 		// addr: Last visited address
 		// pref_addr: the array of addresses to prefetch
 		// pref_cnt: how many addresses to prefetch
@@ -128,8 +148,6 @@ class Cache: public Storage {
 			}
 			else
 			{
-				hst[hst_p] = addr;
-				
 				int i;
 				for(i = (hst_p + 15) % 16; i != hst_p; i = (i + 15) % 16)
 				{
@@ -142,10 +160,6 @@ class Cache: public Storage {
 					int rem = 3;
 					while(id != hst_p && rem > 0)
 					{
-						if( (hst[id] - (c_head+d)) * (hst[id] - (c_head-d)) < 0 )	// c_head - |d| < hst[id] < c_head + |d|
-						{
-							break;
-						}
 						if(c_head - hst[id] == d)
 						{
 							rem--;
@@ -173,13 +187,11 @@ class Cache: public Storage {
 				if(i == hst_p)				// No sequence found
 					pref_cnt = 0;
 				
-				hst_p = (hst_p + 1) % 16;
 				return;
 			}
 		}
 	} pattern;
 	
-  void GetConfig(CacheConfig &cc){ cc = config_; }
   void SetLower(Storage *ll) { lower_ = ll; }
   bool miss(uint64_t addr);
 

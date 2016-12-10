@@ -123,11 +123,29 @@ void Cache::HandleRequest(uint64_t addr, int bytes, int read, char *content, int
 		}
 	}
 	
+	pattern.reg_hst(addr);
 	PrefetchAlgorithm(addr, now_time, config_.prefetch_strategy);
 }
 
 bool Cache::BypassDecision(uint64_t addr) {
-	return false;
+	if(config_.bypass_strategy == 1)
+	{
+		bool bypass = true;
+		int radius = 1 << 12;
+		for(int i = 0; i < 16; i++)
+		{
+			if(pattern.hst[i] == 0 || addr - pattern.hst[i] < radius || pattern.hst[i] - addr < radius)
+			{
+				bypass = false;
+				break;
+			}
+		}
+		return bypass;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 int Cache::ReplaceDecision(uint64_t set_num) {
@@ -135,48 +153,49 @@ int Cache::ReplaceDecision(uint64_t set_num) {
 	int last_visit = 0;
     switch(config_.switch_strategy){
     case 0:{
-	//LRU
-	for(int i = 1; i < config_.associativity; i++)
-	{
-		if(set[set_num].way[i].last_visit_time < set[set_num].way[last_visit].last_visit_time && set[set_num].way[i].valid)			
-			last_visit = i;
-		if(set[set_num].way[i].valid == 0)	//prefer to use the empty block
+		//LRU
+		for(int i = 1; i < config_.associativity; i++)
 		{
-			last_visit = i;
-			break;
+			if(set[set_num].way[i].last_visit_time < set[set_num].way[last_visit].last_visit_time && set[set_num].way[i].valid)			
+				last_visit = i;
+			if(set[set_num].way[i].valid == 0)	//prefer to use the empty block
+			{
+				last_visit = i;
+				break;
+			}
 		}
-	}
-            break;
+		break;
     }
     case 1:{
-	//LFU
-	for(int i = 0;i<config_.associativity;i++)
-	{
-		if(set[set_num].way[i].used_time < set[set_num].way[last_visit].used_time && set[set_num].way[i].valid)
-			last_visit = i;
-		if(set[set_num].way[i].valid == 0)	//prefer to use the empty block
+		//LFU
+		for(int i = 0;i<config_.associativity;i++)
 		{
-			last_visit = i;
-			break;
+			if(set[set_num].way[i].used_time < set[set_num].way[last_visit].used_time && set[set_num].way[i].valid)
+				last_visit = i;
+			if(set[set_num].way[i].valid == 0)	//prefer to use the empty block
+			{
+				last_visit = i;
+				break;
+			}
 		}
-	}
         break;
     }
     case 2:{
-	//FIFO
-	for(int i = 0;i<config_.associativity;i++)
-	{
-		if(set[set_num].way[i].comein_time < set[set_num].way[last_visit].comein_time && set[set_num].way[i].valid)//comrin_time too large?
-			last_visit = i;
-		if(set[set_num].way[i].valid == 0)	//prefer to use the empty block
+		//FIFO
+		for(int i = 0;i<config_.associativity;i++)
 		{
-			last_visit = i;
-			break;
+			if(set[set_num].way[i].comein_time < set[set_num].way[last_visit].comein_time && set[set_num].way[i].valid)//comrin_time too large?
+				last_visit = i;
+			if(set[set_num].way[i].valid == 0)	//prefer to use the empty block
+			{
+				last_visit = i;
+				break;
+			}
 		}
-    }break;
+		break;
     }
     case 3:{
-    //SRAND
+    	//RAND
         srand((unsigned) time(NULL));
         last_visit = rand()%config_.associativity;
         break;
@@ -188,7 +207,7 @@ int Cache::ReplaceDecision(uint64_t set_num) {
 void Cache::PrefetchAlgorithm(uint64_t addr, int now_time, int strategy)
 {
 	int time = -1;		// Temp
-	if(strategy == 1)			// Algebra sequence detecting
+	if(strategy & 1)			// Algebra sequence detecting
 	{
 		uint64_t pref_addr[4];
 		uint64_t read_addr[5] = {addr ^ get_offset(addr)};
@@ -219,7 +238,7 @@ void Cache::PrefetchAlgorithm(uint64_t addr, int now_time, int strategy)
 			Load_block(read_addr[i+1], now_time, s, last_visit, time, true);
 		}
 	}
-	else if(strategy == 2)		// Always next
+	if(strategy & 2)		// Always next
 	{
 		uint64_t read_addr = addr ^ get_offset(addr);
 		uint64_t s = get_set_num(addr);
